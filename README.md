@@ -1,5 +1,9 @@
 # Φ-Plasma-Core
 
+<p align="center">
+  <img src="assets/social-preview-1280x640.png" alt="Φ-Plasma-Core" width="800"/>
+</p>
+
 > **A transformer-style language model architecture where each layer is one
 > step of symplectic Hamiltonian flow over (q, p) phase-space tokens, with
 > Hecke-algebra structured head mixing.**
