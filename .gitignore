@@ -1,0 +1,93 @@
+# ───────────────────────────────────────────────────────────────────
+# Φ-Plasma-Core .gitignore
+# Strategy: include code, configs, tests, docs, and JSONL metrics
+# (the empirical record). Exclude binary weights, caches, venvs.
+# ───────────────────────────────────────────────────────────────────
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test + build cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# ───────────────────────────────────────────────────────────────────
+# ML-specific: NEVER push binary weights to git (they're huge, and
+# GitHub blocks files >100MB anyway). Use Hugging Face Hub or releases
+# for distributing weights if needed.
+# ───────────────────────────────────────────────────────────────────
+
+# Model weights / checkpoints
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.npz
+*.msgpack
+*.h5
+*.hdf5
+*.onnx
+*.tflite
+*.gguf
+
+# Optimizer state / training artifacts
+checkpoints/
+**/checkpoints/
+*.opt
+
+# ───────────────────────────────────────────────────────────────────
+# Training logs — we keep the metrics.jsonl (small, the empirical
+# record of the discovery) but exclude verbose stdout logs.
+# ───────────────────────────────────────────────────────────────────
+
+# Verbose run logs (kept locally for debugging; not pushed)
+logs/**/run.log
+logs/**/run.pid
+logs/v3_chain.log
+logs/v3_chain.pid
+
+# ───────────────────────────────────────────────────────────────────
+# Data / tokenizer caches (downloaded; not committed)
+# ───────────────────────────────────────────────────────────────────
+.token_cache/
+data/raw/
+data/processed/
+
+# ───────────────────────────────────────────────────────────────────
+# Local-only experiment scratch
+# ───────────────────────────────────────────────────────────────────
+scratch/
+sandbox/
+TODO.md.local
+
+# ───────────────────────────────────────────────────────────────────
+# Personal helper scripts (hardcode local paths; README has the
+# canonical reproduction commands)
+# ───────────────────────────────────────────────────────────────────
+scripts/py
+scripts/overnight.sh

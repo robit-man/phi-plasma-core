@@ -1,0 +1,43 @@
+# Tier 1 MVP — composed S2 + S3 on Symplectic AdamW.
+# Target: ~18M params, overnight run on M2 Pro 32GB.
+
+arch: plasma
+out_dir: ./logs/v3_plasma
+
+# Architecture
+vocab_size: 28657              # WikiText-2 cache vocab
+d_hidden: 352                  # 11 × 32
+n_layers: 6
+n_heads: 11                    # = L(5)
+head_dim: 32
+seq_len: 1024
+h_step: 0.2                    # Tightened from 0.5 — smaller step → cleaner symplecticity
+v_hidden_mult: 2               # potential MLP width = 2 × d_hidden
+tie_embeddings: true
+
+# Optimization
+optimizer: symplectic_adamw
+lr: 3.0e-4
+betas: [0.9, 0.95]
+weight_decay: 0.05
+lucas_decay: true
+grad_clip: 1.0
+
+# Schedule
+total_steps: 3000              # Day 8 truncation — enough to validate trajectory; extend later
+warmup: 500
+eig_warmup: 500                # warmup retained but...
+eig_max: 0.0                   # ...penalty disabled — both vacuous-orthogonality (v1) and centralizer (v2)
+                               # were trivially satisfied by high-dim isotropy. The Hecke head-mix
+                               # in the forward pass IS the algebraic structure; auxiliary penalty
+                               # adds nothing here. Re-enable when we have a non-trivial target.
+
+# Data
+batch_size: 8
+stride: 1024                   # non-overlapping windows
+
+# Logging / checkpointing
+log_every: 25                  # finer logging for active monitoring
+eval_every: 500                # 6 evals over the 3K run
+ckpt_every: 1000               # checkpoint at 1K, 2K, 3K
+seed: 0

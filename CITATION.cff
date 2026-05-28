@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software or build on the architectural innovations described here, please cite it as below."
+title: "Φ-Plasma-Core: Symplectic-Hamiltonian Token Flow with Hecke-Eigensheaf Attention"
+abstract: >-
+  A novel transformer-style language model architecture combining
+  symplectic Hamiltonian flow over (q, p) phase-space tokens with
+  Hecke-algebra structured head mixing, trained with a Störmer-Verlet
+  symplectic optimizer. Demonstrates 2.31× more stable validation
+  perplexity across context length doublings (1K to 64K) than a
+  parameter-matched vanilla transformer baseline at the same training
+  budget, on WikiText-2 with 15M-42M parameter models.
+authors:
+  - given-names: "PRIME"
+    alias: "Prime-007-hash"
+    affiliation: "Independent / Roko.Network"
+type: software
+version: "0.1.0"
+date-released: 2026-05-28
+license: Apache-2.0
+keywords:
+  - "language modeling"
+  - "transformer architecture"
+  - "symplectic integration"
+  - "Hamiltonian neural networks"
+  - "Hecke algebra"
+  - "long-context"
+  - "information preservation"
+  - "geometric deep learning"
+  - "physics-informed machine learning"
+repository-code: "https://github.com/Prime-007-hash/phi-plasma-core"

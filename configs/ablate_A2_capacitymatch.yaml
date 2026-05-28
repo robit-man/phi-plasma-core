@@ -1,0 +1,37 @@
+# Ablation A2: capacity-match V_net to vanilla's FFN width.
+# v_hidden_mult: 4 — matches vanilla's ffn_mult=4.
+# Question: does the residual 4% gap (A1 vs vanilla) close when plasma's
+# potential MLP has the same hidden width as vanilla's FFN?
+
+arch: plasma
+out_dir: ./logs/ablate_A2
+
+vocab_size: 28657
+d_hidden: 352
+n_layers: 6
+n_heads: 11
+head_dim: 32
+seq_len: 1024
+h_step: 0.5                    # keep A1's setting (the recovery axis)
+v_hidden_mult: 4               # ← the ablation: was 2, now matches vanilla's ffn_mult
+tie_embeddings: true
+
+optimizer: symplectic_adamw
+lr: 3.0e-4
+betas: [0.9, 0.95]
+weight_decay: 0.05
+lucas_decay: true
+grad_clip: 1.0
+
+total_steps: 3000
+warmup: 500
+eig_warmup: 500
+eig_max: 0.0
+
+batch_size: 8
+stride: 1024
+
+log_every: 25
+eval_every: 500
+ckpt_every: 1000
+seed: 0
