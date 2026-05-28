@@ -451,6 +451,19 @@ width) is already trending below vanilla at the same step count.
 \subsection{Long-context information preservation}
 \label{sec:long-ctx}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_long_context_stability.pdf}
+\caption{\textbf{Headline empirical result.}
+Left: absolute validation perplexity vs.\ context length (log scale).
+Right: fractional drift from training-context perplexity, as a function
+of context-length doubling. Plasma's total drift across the
+$1024 \to 65536$ range is $12.6\%$; vanilla's is $29.1\%$. The plasma
+architecture is $2.31\times$ more stable on the long-context
+information-preservation axis the design predicts.}
+\label{fig:headline}
+\end{figure}
+
 Table~\ref{tab:long-ctx} presents the central empirical result. We evaluate
 both architectures at six sequence lengths spanning two binary orders of
 magnitude beyond training context, applying positional embedding
@@ -565,6 +578,29 @@ a chosen subspace) that the model cannot satisfy by chance. We
 suspect a substantial fraction of the literature's ``structured
 regularization'' results are similarly vacuous and have not been
 checked.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig2_training_curves.pdf}
+\caption{\textbf{Training trajectories} for all four arms over $3000$
+optimization steps, log-scale axes. The plasma A1 variant ($h = 0.5$)
+tracks vanilla closely throughout, while v3 ($h = 0.2$) converges
+visibly slower per step. Plasma A2 (capacity-matched $V$-net) is
+indistinguishable from A1, confirming $V$-net capacity is not the
+residual gap.}
+\label{fig:training-curves}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/fig3_ablation_summary.pdf}
+\caption{\textbf{Final-step validation perplexity} across the three
+plasma variants and the vanilla baseline. The h-step reversion
+$0.2 \to 0.5$ closes most of the original $20\%$ gap to vanilla;
+the remaining $\sim 4\%$ is attributed to the $(q, p)$ split's
+content-channel halving.}
+\label{fig:ablation-bars}
+\end{figure}
 
 \subsection{Iterations A1, A2: $h$-step and capacity}
 
