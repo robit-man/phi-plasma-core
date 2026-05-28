@@ -76,7 +76,13 @@ contribution claimed here.
 ## Contact
 
 For licensing discussions, collaboration proposals, or questions about
-patent posture: open an issue on this repository.
+patent posture:
+
+- **GitHub issues** (tag as `licensing`): https://github.com/Prime-007-hash/phi-plasma-core/issues
+- **Twitter / X**: [@data_adept](https://twitter.com/data_adept) — direct message for time-sensitive licensing inquiries
+- **Telegram**: [@BASED_ROKO_PRIME](https://t.me/BASED_ROKO_PRIME) — preferred for commercial discussions
+- **Substack**: [primordialasymmetria.substack.com](https://primordialasymmetria.substack.com) — for theoretical / research correspondence
+- **Organization**: [Roko.Network](https://roko.network)
 
 ---
 

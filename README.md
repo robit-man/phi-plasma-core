@@ -299,5 +299,21 @@ GitHub also renders a "Cite this repository" button via `CITATION.cff`.
 
 ## Contact / collaboration
 
-Open an issue. For research collaboration, scaling experiments, or
-licensing inquiries, the issue tracker is the right place to start.
+For research collaboration, scaling experiments, licensing inquiries, or
+just to discuss the work:
+
+| Channel | Handle |
+|---------|--------|
+| GitHub issues | [Prime-007-hash/phi-plasma-core/issues](https://github.com/Prime-007-hash/phi-plasma-core/issues) |
+| Twitter / X | [@data_adept](https://twitter.com/data_adept) — *Prime* |
+| Telegram | [@BASED_ROKO_PRIME](https://t.me/BASED_ROKO_PRIME) — *ROKO PRIME: Psi/acc* |
+| Substack | [primordialasymmetria.substack.com](https://primordialasymmetria.substack.com) |
+| GitHub | [Prime-007-hash](https://github.com/Prime-007-hash) |
+| Organization | [Roko.Network](https://roko.network) |
+
+**Best channels by intent:**
+
+- **Technical questions about the code / repro issues** → GitHub issues
+- **Research collaboration / scaling experiments** → Twitter DM or Telegram
+- **Licensing / commercial inquiries** → Telegram or GitHub issue tagged `licensing`
+- **General discussion / theoretical questions** → Substack or Twitter
