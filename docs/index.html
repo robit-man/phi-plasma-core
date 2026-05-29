@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Φ-Plasma-Core — Symplectic-Hamiltonian Transformer</title>
+<meta name="description"
+  content="A transformer-style language model where each layer is one step of symplectic Hamiltonian flow over (q,p) phase-space tokens. 2.31× more stable long-context perplexity than vanilla baselines." />
+
+<!-- OpenGraph for nice unfurls -->
+<meta property="og:title" content="Φ-Plasma-Core" />
+<meta property="og:description"
+  content="Symplectic-Hamiltonian transformer with 2.31× long-context stability. Two rigorous mech-interp probes (Koopman EDMD + Williams-Beer PID) extracted from a retired architecture." />
+<meta property="og:image"
+  content="https://prime-007-hash.github.io/phi-plasma-core/assets/social-preview-1280x640.png" />
+<meta property="og:url" content="https://prime-007-hash.github.io/phi-plasma-core/" />
+<meta property="og:type" content="article" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@data_adept" />
+
+<!-- ─── ANALYTICS ─────────────────────────────────────────────────
+     Pick ONE provider below (or none) and replace the placeholder.
+     This is where the real visitor data shows up — IP, browser,
+     country, referrer, time on page, scroll depth, repeat visits.
+
+     [A] Goatcounter — FREE, privacy-respecting, no cookies, no signup
+         required for self-hosted; managed plan is $0/mo for hobby use.
+         https://www.goatcounter.com
+
+     [B] Plausible — $9/mo, EU-hosted, no cookies, very clean dashboard.
+         https://plausible.io
+
+     [C] Umami — self-host on Vercel free tier or any Postgres host.
+         https://umami.is
+
+     The placeholder below is for Goatcounter, the most generous option.
+     Sign up at https://www.goatcounter.com/signup, get your site code,
+     replace YOUR-GOATCOUNTER-CODE in the line below.
+─────────────────────────────────────────────────────────────── -->
+<script data-goatcounter="https://YOUR-GOATCOUNTER-CODE.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --fg: #e8e8e8;
+    --muted: #888;
+    --accent: #d4b896;
+    --link: #82b3ff;
+    --code-bg: #1a1a1d;
+    --border: #2a2a2d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .container { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem; }
+  header.hero {
+    text-align: center;
+    padding: 4rem 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0a0a0c 0%, #100c14 100%);
+  }
+  header.hero img { max-width: 100%; border-radius: 4px; margin-bottom: 1.5rem; }
+  header.hero h1 {
+    font-size: 2.5rem;
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  header.hero .tagline {
+    font-size: 1.15rem;
+    color: var(--accent);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  h2 { color: var(--accent); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { color: var(--fg); margin-top: 1.8rem; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre {
+    font-family: "SF Mono", Menlo, monospace;
+    background: var(--code-bg);
+  }
+  code { padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.9em; }
+  pre {
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; }
+  th { color: var(--accent); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1rem;
+    color: var(--muted);
+    margin-left: 0;
+  }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+  .badge { padding: 0.25rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85em; color: var(--muted); }
+  footer { color: var(--muted); padding: 3rem 1rem; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 6px;
+    font-weight: 600;
+    margin: 0.5rem;
+  }
+  .cta:hover { text-decoration: none; opacity: 0.9; }
+  .headline-table th { color: var(--fg); }
+  .headline-table td.big { font-size: 1.3em; color: var(--accent); font-weight: 600; }
+  .nav { display: flex; gap: 1.5rem; justify-content: center; padding: 1rem; flex-wrap: wrap; }
+  .nav a { color: var(--muted); font-size: 0.95em; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <img src="assets/social-preview-1280x640.png" alt="Φ-Plasma-Core" />
+    <h1>Φ-Plasma-Core</h1>
+    <p class="tagline">
+      A transformer-style language model where each layer is one step of
+      <strong>symplectic Hamiltonian flow</strong> over (q, p) phase-space tokens.
+      <strong>2.31× more stable</strong> long-context perplexity than vanilla baselines.
+    </p>
+    <div class="badges">
+      <span class="badge">Apache 2.0</span>
+      <span class="badge">Patent Notice</span>
+      <span class="badge">Research Preview</span>
+    </div>
+    <p style="margin-top: 2rem;">
+      <a class="cta" href="https://github.com/Prime-007-hash/phi-plasma-core">⭐ Code on GitHub</a>
+      <a class="cta" href="https://github.com/Prime-007-hash/phi-plasma-core/blob/main/paper/main.tex" style="background: transparent; color: var(--accent); border: 1px solid var(--accent);">📄 Paper (LaTeX)</a>
+    </p>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#headline">Result</a>
+  <a href="#idea">Idea</a>
+  <a href="#math">Math</a>
+  <a href="#run">Run</a>
+  <a href="#concentrate">v0.2 Φ-CONCENTRATE</a>
+  <a href="#limits">Limitations</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main class="container">
+
+<h2 id="headline">The headline finding</h2>
+<table class="headline-table">
+  <thead>
+    <tr>
+      <th>Context length</th>
+      <th>Plasma val_ppl</th>
+      <th>Vanilla val_ppl</th>
+      <th>Δ Plasma</th>
+      <th>Δ Vanilla</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1024 (train)</td><td>402</td><td>335</td><td>—</td><td>—</td></tr>
+    <tr><td>4096 (4×)</td><td>458</td><td>409</td><td>+14%</td><td>+22%</td></tr>
+    <tr><td>16384 (16×)</td><td>448</td><td>413</td><td>+11%</td><td>+23%</td></tr>
+    <tr><td>32768 (32×)</td><td>453</td><td>428</td><td>+13%</td><td>+28%</td></tr>
+    <tr><td><strong>65536 (64×)</strong></td><td>453</td><td>432</td><td class="big"><strong>+13%</strong></td><td class="big"><strong>+29%</strong></td></tr>
+  </tbody>
+</table>
+<p>
+  Across six context doublings, plasma's perplexity drifts 12.6% total;
+  vanilla drifts 29.1%. The plasma architecture is
+  <strong>2.31× more stable</strong> on the information-preservation axis
+  it was architecturally designed to win on.
+</p>
+<p>
+  Models: ~15M params each, trained 3000 steps on WikiText-2, evaluated
+  with chunked attention at extended contexts. Full numbers and
+  limitations in
+  <a href="https://github.com/Prime-007-hash/phi-plasma-core/blob/main/DAY8_VERDICT.md">DAY8_VERDICT.md</a>.
+</p>
+
+<h2 id="idea">The core idea (pool table vs. chalkboard)</h2>
+<p>
+  A <strong>vanilla transformer is a chalkboard</strong>. Each layer
+  writes new numbers in chalk; to make room, old information gets erased.
+  By layer 6, what happened in the first 100 tokens is mostly gone unless
+  attention specifically grabbed it.
+</p>
+<p>
+  <strong>Φ-Plasma-Core is a pool table</strong>. Each token isn't a
+  number — it's a billiard ball with <em>position</em> AND <em>momentum</em>.
+  The "layers" aren't acts of writing — they're physical time-steps in a
+  billiards game. Balls roll, hit each other, exchange energy, but the
+  system obeys conservation laws: <strong>total energy is preserved, and
+  the volume occupied by all balls in their position+momentum coordinates
+  never changes.</strong> This is Liouville's theorem from classical
+  mechanics, and we encoded it directly into the architecture.
+</p>
+<p>
+  Why this matters: the architecture is <strong>reversible by
+  construction</strong>. Information from token 1 is physically still in
+  the phase space at layer 6 — it has to be, because the dynamics conserve
+  phase-space volume. Vanilla transformers have no such conservation;
+  they can and do lose information.
+</p>
+
+<h2 id="math">Three mathematical ingredients, each load-bearing</h2>
+
+<h3>1. Phase-space split (Hamilton's mechanics)</h3>
+<p>
+  Each token <code>x ∈ ℝᵈ</code> splits into <code>(q, p)</code> with
+  <code>q, p ∈ ℝ^{d/2}</code>. <code>q</code> is "position" (content),
+  <code>p</code> is "momentum" (rate-of-change). Same total
+  dimensionality, organized so conservation laws make sense.
+</p>
+
+<h3>2. Symplectic integration (Marsden-West, 1968)</h3>
+<p>
+  Each layer is one Störmer-Verlet leapfrog step under a learned
+  Hamiltonian <code>H(q, p, a) = ½p^T M^{-1} p + V(q, a)</code>:
+</p>
+<pre><code>p_{1/2} = p − (h/2) · ∂V/∂q          # half-step momentum
+q'      = q + h · M⁻¹ · p_{1/2}     # full-step position
+p'      = p_{1/2} − (h/2) · ∂V/∂q'   # half-step momentum at new q</code></pre>
+<p>
+  Störmer-Verlet is a 200-year-old integrator from orbital mechanics
+  (used to simulate the solar system for millions of years). It
+  preserves a modified energy function exactly forever, by construction.
+</p>
+
+<h3>3. Hecke-algebra head structure</h3>
+<p>
+  The 11 attention heads (= Lucas number L(5)) index the basis of the
+  Iwahori-Hecke algebra of type <code>A_{n-1}</code> at parameter
+  <code>q = φ</code> (the golden ratio). A small policy network outputs
+  per-token a soft "Hecke word" mixing head outputs through the algebraic
+  generators. Heads can only mix according to a rule book the algebra
+  provides.
+</p>
+
+<h2 id="run">How to reproduce</h2>
+<pre><code># 16/16 invariant tests
+PYTHONPATH=src pytest tests/
+
+# Full Tier-1 MVP run (~36 min on M2 Pro)
+PYTHONPATH=src python -m phi_plasma.train --config configs/mvp_18m.yaml
+
+# Long-context comparison (the 2.31× result)
+PYTHONPATH=src python scripts/long_context_eval.py \
+    --ckpt logs/v3_plasma/ckpt_final.pt \
+    --seq-lens 1024,4096,8192,16384,32768,65536 \
+    --chunk 256 --max-windows 3</code></pre>
+
+<h2 id="concentrate">v0.2 — Φ-CONCENTRATE</h2>
+<p>
+  After a deep audit of 30 prior phi-family models retired by the math
+  audit, we extracted the 5 keepers and composed them into a single
+  architecture. Two of those keepers are rigorous mechanistic-interpretability
+  probes <strong>buried inside an abandoned model that nobody knew were
+  rigorous</strong>:
+</p>
+<ul>
+  <li><strong>Koopman EDMD probe</strong> — polynomial-lift EDMD with exact
+      spectral diagnostics (gap + Lyapunov via <code>torch.linalg.eig</code>).</li>
+  <li><strong>Williams-Beer PID synergy probe</strong> — Gaussian MMI
+      synergy estimator. Can be enforced as a training objective without
+      breaking NLL.</li>
+</ul>
+<p>
+  Both are documented in
+  <a href="https://github.com/Prime-007-hash/phi-plasma-core/blob/main/paper/probes/main.tex">paper/probes/main.tex</a>
+  ("Buried Treasure"). v0.2 inherits 1.93× of plasma's 2.31× stability
+  while gaining the three probes — Pareto-positive.
+</p>
+
+<h2 id="limits">Honest limitations</h2>
+<ul>
+  <li><strong>Scale.</strong> 15-42M params. Production LLMs are 1B-1T.</li>
+  <li><strong>Datasets.</strong> Only WikiText-2.</li>
+  <li><strong>Baseline.</strong> Stripped vanilla — no RoPE, no FlashAttention, no modern tokenizer.</li>
+  <li><strong>Compute.</strong> Plasma is ~1.8× slower per step than vanilla due to the symplectic double-gradient.</li>
+  <li><strong>Generation.</strong> Only perplexity measured. Downstream task performance untested.</li>
+</ul>
+<p>This is a research preview, not a production model.</p>
+
+<h2 id="contact">Contact</h2>
+<table>
+  <tr><th>Channel</th><th>Handle</th></tr>
+  <tr><td>GitHub issues</td><td><a href="https://github.com/Prime-007-hash/phi-plasma-core/issues">Prime-007-hash/phi-plasma-core/issues</a></td></tr>
+  <tr><td>Twitter / X</td><td><a href="https://twitter.com/data_adept">@data_adept</a></td></tr>
+  <tr><td>Telegram</td><td><a href="https://t.me/BASED_ROKO_PRIME">@BASED_ROKO_PRIME</a></td></tr>
+  <tr><td>Substack</td><td><a href="https://primordialasymmetria.substack.com">primordialasymmetria.substack.com</a></td></tr>
+  <tr><td>Organization</td><td><a href="https://roko.network">Roko.Network</a></td></tr>
+</table>
+
+</main>
+
+<footer>
+  <p>
+    Code: Apache License 2.0 with patent grant ·
+    Paper: arXiv coming soon
+  </p>
+  <p>
+    Copyright © 2026 PRIME (<a href="https://github.com/Prime-007-hash">Prime-007-hash</a>)
+  </p>
+</footer>
+
+</body>
+</html>

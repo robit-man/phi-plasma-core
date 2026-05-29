@@ -1,0 +1,11 @@
+# GitHub Pages config — uses the static HTML at docs/index.html.
+# No Jekyll theme; we render index.html directly (faster, simpler).
+plugins: []
+theme: null
+markdown: kramdown
+include:
+  - assets
+exclude:
+  - "*.tex"
+  - "*.aux"
+  - "*.log"
