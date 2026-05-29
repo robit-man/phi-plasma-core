@@ -104,7 +104,9 @@ def eval_perplexity(model, val_loader, device, max_batches: int = 32) -> float:
         if i >= max_batches:
             break
         x, y = x.to(device), y.to(device)
-        logits = model(x)
+        out = model(x)
+        # concentrate returns dict; plasma/vanilla return raw logits tensor
+        logits = out["logits"] if isinstance(out, dict) else out
         B, T, V = logits.shape
         nll = torch.nn.functional.cross_entropy(logits.reshape(-1, V), y.reshape(-1))
         total_nll += float(nll) * B * T
