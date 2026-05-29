@@ -41,6 +41,7 @@ from phi_plasma.constants import VOCAB_SIZE, D_HIDDEN, N_LAYERS, N_HEADS, HEAD_D
 from phi_plasma.data import find_cache, load_token_stream
 from phi_plasma.plasma_core import PlasmaCore
 from phi_plasma.vanilla_baseline import VanillaTransformer
+from phi_plasma.concentrate_model import ConcentrateModel
 from phi_plasma.chunked_attention import patch_for_long_context
 
 
@@ -65,6 +66,19 @@ def build_model_from_cfg(cfg, seq_len_override=None):
         return PlasmaCore(h_step=cfg.get("h_step", 0.5),
                           v_hidden_mult=cfg.get("v_hidden_mult", 2),
                           **common)
+    if cfg["arch"] == "concentrate":
+        return ConcentrateModel(
+            h_step=cfg.get("h_step", 0.5),
+            v_hidden_mult=cfg.get("v_hidden_mult", 2),
+            use_koopman=cfg.get("use_koopman", True),
+            koopman_latent_dim=cfg.get("koopman_latent_dim", 32),
+            use_iit_pid=cfg.get("use_iit_pid", True),
+            iit_n_partitions=cfg.get("iit_n_partitions", 4),
+            use_sheaf=cfg.get("use_sheaf", True),
+            sheaf_n_edge_types=cfg.get("sheaf_n_edge_types", 8),
+            sheaf_max_skip=cfg.get("sheaf_max_skip", 8),
+            **common,
+        )
     return VanillaTransformer(ffn_mult=cfg.get("ffn_mult", 4), **common)
 
 
