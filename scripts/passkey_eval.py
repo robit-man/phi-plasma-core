@@ -83,16 +83,22 @@ def build_model_from_cfg(cfg, seq_len_override=None):
 
 
 def remap_pos_embedding(sd, new_seq):
-    key = "pos_embed.weight"
-    if key not in sd: return sd
-    pe = sd[key]
-    if pe.shape[0] == new_seq: return sd
-    pe = pe.unsqueeze(0).unsqueeze(0).float()
-    new_pe = torch.nn.functional.interpolate(
-        pe, size=(new_seq, pe.shape[-1]), mode="bilinear", align_corners=False
-    )
+    """Interpolate position embedding for extended context.
+
+    Handles both plasma's 'pos_embed.weight' and concentrate's
+    nested 'backbone.pos_embed.weight'."""
     sd = dict(sd)
-    sd[key] = new_pe.squeeze(0).squeeze(0).to(pe.dtype)
+    for key in ("pos_embed.weight", "backbone.pos_embed.weight"):
+        if key not in sd:
+            continue
+        pe = sd[key]
+        if pe.shape[0] == new_seq:
+            continue
+        pe_b = pe.unsqueeze(0).unsqueeze(0).float()
+        new_pe = torch.nn.functional.interpolate(
+            pe_b, size=(new_seq, pe_b.shape[-1]), mode="bilinear", align_corners=False
+        )
+        sd[key] = new_pe.squeeze(0).squeeze(0).to(pe.dtype)
     return sd
 
 

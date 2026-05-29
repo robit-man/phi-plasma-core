@@ -120,20 +120,25 @@ def remap_pos_embedding(state_dict, old_seq, new_seq):
     """Linearly interpolate positional embedding from old_seq → new_seq tokens.
 
     Standard NTK-aware extrapolation: scale positions by old/new ratio so that
-    relative phase relationships are preserved."""
-    key = "pos_embed.weight"
-    if key not in state_dict:
-        return state_dict
-    old_pe = state_dict[key]   # (old_seq, d_hidden)
-    if old_pe.shape[0] == new_seq:
-        return state_dict
-    # Interpolate along the sequence dimension.
-    old_pe = old_pe.unsqueeze(0).unsqueeze(0)   # (1, 1, old_seq, d_hidden)
-    new_pe = torch.nn.functional.interpolate(
-        old_pe.float(), size=(new_seq, old_pe.shape[-1]), mode="bilinear", align_corners=False
-    )
+    relative phase relationships are preserved.
+
+    Handles both plasma's flat layout ('pos_embed.weight') and concentrate's
+    nested layout where the backbone is wrapped ('backbone.pos_embed.weight')."""
+    candidate_keys = ("pos_embed.weight", "backbone.pos_embed.weight")
     state_dict = dict(state_dict)
-    state_dict[key] = new_pe.squeeze(0).squeeze(0).to(old_pe.dtype)
+    for key in candidate_keys:
+        if key not in state_dict:
+            continue
+        old_pe = state_dict[key]
+        if old_pe.shape[0] == new_seq:
+            continue
+        # Interpolate along the sequence dimension
+        old_pe_b = old_pe.unsqueeze(0).unsqueeze(0)
+        new_pe = torch.nn.functional.interpolate(
+            old_pe_b.float(), size=(new_seq, old_pe_b.shape[-1]),
+            mode="bilinear", align_corners=False
+        )
+        state_dict[key] = new_pe.squeeze(0).squeeze(0).to(old_pe.dtype)
     return state_dict
 
 
