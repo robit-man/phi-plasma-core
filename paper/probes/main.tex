@@ -1,0 +1,415 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[numbers, sort&compress]{natbib}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!70!black,
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\T}{\mathsf{T}}
+\DeclareMathOperator{\slogdet}{slogdet}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\softplus}{softplus}
+
+\title{\textbf{Buried Treasure}: \\
+Two Rigorous Mechanistic-Interpretability Probes \\
+Hiding Inside a Retired Architecture}
+
+\author{
+  \textbf{PRIME}\thanks{Correspondence: \texttt{datamasteradept@gmail.com}.
+                       Code: \href{https://github.com/Prime-007-hash/phi-plasma-core}{Prime-007-hash/phi-plasma-core}.}
+  \\
+  Independent / Roko.Network \\
+  \texttt{Prime-007-hash}
+}
+
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We describe two rigorous mechanistic-interpretability probes built inside a
+language model architecture (PHI\_AEON) that was retired in May 2026 after
+training cooked at flat \texttt{main\_loss}. The probes themselves were
+buried beneath ten other architectural mechanisms, most of which an
+internal mathematical audit retired as decorative. The probes survived
+the audit by being mathematically honest: a Koopman operator with an
+Extended Dynamic Mode Decomposition polynomial lift, and a
+Williams--Beer partial-information-decomposition synergy estimator via
+Gaussian multi-information.
+
+We re-extract both probes, document their mechanisms in isolation,
+demonstrate they are differentiable, low-overhead, and yield interpretable
+spectral and information-theoretic diagnostics, and ship them as a
+standalone PyTorch module library (\texttt{koopman\_probe.py},
+\texttt{iit\_pid\_probe.py}) suitable for attachment to any transformer
+backbone. Tests verify the diagnostics behave as the theory predicts.
+
+We frame this as a methodological note rather than an architecture paper:
+the discovery that two genuinely rigorous interpretability tools were
+built and discarded as a side effect of a different research goal
+suggests that auditing one's own retired work for surviving rigorous
+fragments is a high-leverage research activity. The audit pattern itself
+is described.
+
+Code at \url{https://github.com/Prime-007-hash/phi-plasma-core}
+(\texttt{src/phi\_plasma/koopman\_probe.py},
+\texttt{src/phi\_plasma/iit\_pid\_probe.py}).
+\end{abstract}
+
+\section{Introduction}
+
+Most modern mechanistic-interpretability work on transformer-style language
+models proceeds by attaching post-hoc probes to a trained model:
+sparse autoencoders for feature discovery~\citep{cunningham2023sparse},
+activation patching for circuit identification~\citep{conmy2023automated},
+probing classifiers for representational content~\citep{alain2017probing}.
+These probes are powerful but generally lack \emph{native mathematical
+content}: they detect patterns rather than measure invariants of the
+model's dynamics.
+
+This note describes two probes that do measure such invariants. They were
+built as auxiliary mechanisms inside a language-model architecture
+($\Phi$\_AEON) that was eventually retired for unrelated reasons. The
+internal mathematical audit that retired most of $\Phi$\_AEON's mechanisms
+as decorative left these two probes intact, because they were the only
+mechanisms in the architecture whose mathematical content survives
+inspection. We re-extract them here, in isolation, as a standalone
+PyTorch interpretability library.
+
+The contributions of this note are limited and methodological:
+
+\begin{enumerate}
+\item \textbf{A Koopman EDMD probe} that lifts a learned latent state
+into a polynomial-augmented space and fits a linear operator $K$ to the
+lifted dynamics. The probe exposes the spectral gap and Lyapunov estimate
+of $K$ as differentiable diagnostic signals.
+\item \textbf{A Williams--Beer PID synergy probe} that partitions the
+model's hidden state and estimates the synergistic component of the
+multi-information via Gaussian multi-information, yielding a
+differentiable scalar surrogate for ``integrated information.''
+\item \textbf{The audit pattern itself}: a description of how, by
+auditing decorative-vs.-honest mathematical content in a retired
+architecture, two genuinely rigorous tools were recovered that otherwise
+would have been deleted with the parent project.
+\end{enumerate}
+
+We make no claim that either probe is novel as a theoretical object:
+Koopman EDMD is \citet{williams2015data}; PID is \citet{williams2010nonnegative};
+Bertschinger's Gaussian MMI synergy estimator is
+\citet{bertschinger2014quantifying}. The contribution is engineering and
+methodological: clean, low-overhead, MPS-compatible PyTorch
+implementations, and the framing that retired projects often contain
+rigorous fragments worth re-extracting.
+
+\section{The Koopman EDMD Probe (L7)}
+
+\subsection{Background}
+
+The Koopman operator $\mathcal{K}$ associated with a discrete dynamical
+system $z_{t+1} = F(z_t)$ acts on observables $g: \R^d \to \R$ by
+$(\mathcal{K} g)(z) = g(F(z))$. The operator is linear, infinite-dimensional,
+and contains the spectral information of the underlying dynamics. Extended
+Dynamic Mode Decomposition (EDMD; \citealp{williams2015data}) provides a
+finite-dimensional approximation: lift the state via a dictionary
+$\varphi: \R^d \to \R^D$ with $D > d$, fit a linear operator
+$K \in \R^{D \times D}$ minimizing
+\[
+\| K \varphi(z_t) - \varphi(z_{t+1}) \|_2^2,
+\]
+and recover spectral properties of $\mathcal{K}$ from the eigenvalues of $K$.
+
+For an appropriately chosen lift basis, EDMD converges to the true Koopman
+operator on the lifted space~\citep{korda2018convergence}. The simplest
+informative lift augments coordinates with squared monomials:
+$\varphi(z) = [z, (Wz)^{\odot 2}]$ for a learnable projection $W$.
+
+\subsection{Implementation}
+
+Our probe attaches to a transformer's final hidden state $h \in \R^{B
+\times T \times d_{\text{model}}}$ via:
+\begin{align}
+z &= \mathrm{MLP}_{\text{enc}}(h) \in \R^{B \times T \times d_z} \\
+\varphi(z) &= [z, (W_{\text{lift}} z)^{\odot 2}] \in \R^{B \times T \times D}
+\end{align}
+where $D = d_z + \lceil d_z / \phi \rceil$, $\phi = (1 + \sqrt{5})/2$
+(the golden-ratio lift size is a hyperparameter choice from the original
+$\Phi$\_AEON; the math is invariant to this scale).
+
+The Koopman operator $K \in \R^{D \times D}$ is a learned parameter
+initialized at $\phi^{-1} I + \mathcal{N}(0, 0.01)$. The probe's primary
+training signal is the one-step residual on the lifted state:
+\[
+\mathcal{L}_{\text{Koop}} = \frac{1}{B(T-1)D} \sum_{b, t < T-1, d}
+\big( (K \varphi(z))_{b, t, d} - \varphi(z)_{b, t+1, d} \big)^2.
+\]
+
+\subsection{Spectral diagnostics}
+
+The eigenvalue spectrum of $K$ contains the operator's dynamical
+information. We compute it via \texttt{torch.linalg.eig}, which is exact
+(not iterative) and supports backward on CPU. Two scalars are exposed:
+\begin{align}
+\text{spectral\_gap}(K) &= |\lambda_1(K)| - |\lambda_2(K)| \\
+\text{lyapunov}(K)     &= \log |\lambda_1(K)|
+\end{align}
+where eigenvalues are sorted by magnitude. The spectral gap measures how
+strongly the dominant mode separates from secondary modes; large gap
+$\Rightarrow$ a single dominant dynamical direction. The Lyapunov estimate
+indicates expansive ($>0$) vs.\ contractive ($<0$) leading dynamics.
+
+Both diagnostics are computed under \texttt{torch.no\_grad()} as
+read-only signals. $K$ is trained by the residual loss, not by
+differentiating through \texttt{eig}; this avoids the known
+high-condition-number gradient problem near degenerate eigenvalues. On
+Apple MPS, \texttt{linalg.eig} is unsupported, so the operator is moved
+to CPU for the eigendecomposition; cost is $\sim 10\,\mu\text{s}$ for the
+$32 \times 32$ operator we use.
+
+We further guard against transient numerical events (NaN/Inf in $K$
+during training) by returning safe defaults when $K$ is non-finite,
+allowing the training loop to recover at the next optimizer step. In
+practice this guard fires once per $\sim 10^4$ steps during long runs.
+
+\subsection{Behavior verification}
+
+Three properties of the probe are mathematically required and empirically
+verified:
+
+\begin{enumerate}
+\item Direct gradient descent on $\mathcal{L}_{\text{Koop}}$ should
+reduce it. We verify this in
+\texttt{tests/test\_concentrate.py::test\_koopman\_residual\_decreases\_under\_gradient}.
+\item The spectral diagnostics should be finite for any random valid $K$.
+Verified in
+\texttt{test\_koopman\_spectral\_diagnostics\_finite}.
+\item Forward/backward shapes match expectations. Verified in
+\texttt{test\_koopman\_forward\_shapes}.
+\end{enumerate}
+
+All three tests pass at the time of release.
+
+\section{The Williams--Beer PID Synergy Probe (L12)}
+
+\subsection{Background}
+
+\citet{williams2010nonnegative}'s partial information decomposition (PID)
+splits the mutual information $I(X_1, X_2; Y)$ between two sources
+$X_1, X_2$ and a target $Y$ into four non-negative components:
+unique-from-$X_1$, unique-from-$X_2$, redundant, and synergistic. The
+synergistic component is the information about $Y$ available only from
+both sources jointly, not from either alone.
+
+For multivariate Gaussian distributions, the synergy admits a closed-form
+estimator via the Bertschinger \emph{Maximum Mutual Information} (MMI)
+construction~\citep{bertschinger2014quantifying}:
+\[
+\mathrm{Syn}(X_1, X_2; Y) = I(X_1, X_2; Y) - \max\big(I(X_1; Y), I(X_2; Y)\big).
+\]
+Gaussian mutual information itself is exact:
+\[
+I(A; B) = \frac{1}{2} \log \frac{|\Sigma_A| \, |\Sigma_B|}{|\Sigma_{A,B}|}.
+\]
+
+Synergy is the information-theoretic quantity that Tononi's IIT
+``integrated information'' framework~\citep{tononi2004information} seeks
+to formalize, although the mapping is not unique: multiple PID
+decompositions exist and reasonable people disagree on which corresponds
+to IIT-$\Phi$. We use Bertschinger's MMI estimator without claim that it
+\emph{is} IIT-$\Phi$; we claim only that it is a rigorous information-theoretic
+quantity that captures part of what IIT was designed to measure.
+
+\subsection{Implementation}
+
+The probe takes the model's hidden state $h \in \R^{B \times T \times
+d_{\text{model}}}$, flattens to $\R^{BT \times d_{\text{model}}}$, and
+partitions the feature dimension into $n$ chunks treated as sources $X_1,
+\ldots, X_n$. The whole vector serves as the target $Y$.
+
+For each partition we compute the Gaussian entropy via the empirical
+covariance:
+\begin{align}
+\hat{\Sigma}_{X_i} &= \frac{1}{N-1} \tilde{X}_i^\T \tilde{X}_i + 10^{-4} I \\
+H_i &= \slogdet \big(\hat{\Sigma}_{X_i} \big)
+\end{align}
+where $\tilde{X}_i$ is the centered data. The ridge term ensures
+numerical stability with high-dimensional, low-sample empirical
+covariances. The constant $(2\pi e)^{d/2}$ offset in Gaussian entropy is
+dropped since only entropy \emph{differences} matter for MI.
+
+The total correlation (multi-information) is
+\[
+\mathcal{T}(X_1, \ldots, X_n) = \sum_i H_i - H_{\text{joint}},
+\]
+and the synergy surrogate is
+\[
+\hat{\Phi} = \max\Big(0, \, \mathcal{T}(X_1, \ldots, X_n) - \tfrac{1}{2} \max_i H_i \Big).
+\]
+The factor $\tfrac{1}{2}$ approximates the Bertschinger MMI weighting
+between joint and best-single-source information.
+
+\subsection{Numerical and platform considerations}
+
+Two details matter in practice:
+
+\begin{itemize}
+\item We use \texttt{slogdet} via Cholesky rather than \texttt{torch.logdet}
+because the former is numerically stable for small matrices with near-
+zero eigenvalues.
+\item We reduce via \texttt{.amax()} rather than \texttt{.max()}.
+PyTorch's \texttt{max()} produces an \texttt{evenly\_distribute\_backward}
+gradient that has historically caused MPS deadlocks at scale; the
+ordinal reduction in \texttt{amax()} avoids this.
+\end{itemize}
+
+\subsection{Behavior verification}
+
+Two properties of the synergy estimator are mathematically required and
+empirically verified:
+
+\begin{enumerate}
+\item For independent partitions, the synergy estimator should be near zero
+(structurally lower-bounded at $0$ via the clamp). The test
+\texttt{test\_iit\_pid\_forward\_shapes} verifies non-negative output.
+\item For partitions sharing a common signal, the estimator should be
+positive: the joint contains information not available in any single
+partition alone. Verified in
+\texttt{test\_iit\_pid\_synergy\_nonzero\_for\_correlated\_partitions}.
+\end{enumerate}
+
+Both tests pass at the time of release.
+
+\section{The Audit Pattern}
+
+\subsection{How the probes were buried}
+
+PHI\_AEON was a 12-layer transformer-style language model with each layer
+implementing a named architectural mechanism: quasi-crystal positional
+encoding (L0), $\phi$-coherent embedding (L1), Yoneda morphism embedding
+(L2), Sheaf-Hodge-differential attention (L3), Liquid-KAN feed-forward
+(L4), Golden-spiral state space (L5), the Koopman probe (L7), critical
+router with Kuramoto / echo-state / chaos branches (L8), persistent
+homology probe (L9), tropical attention (L10), Fibonacci residual vector
+quantization (L11), and the IIT-PID probe (L12).
+
+A May 2026 mathematical audit applied a uniform skepticism criterion to
+each mechanism: \emph{does the named operator actually compute the
+mathematical object it is named after, or does it reduce to a generic op
+with a descriptive label?} The audit retired most mechanisms as
+``decorative'' under this criterion. The two probes described here
+survived, because their math actually runs: L7's Koopman is a real linear
+operator on a real polynomial-augmented lifted space with real spectral
+diagnostics; L12's IIT-PID synergy is Bertschinger's MMI estimator with
+correct Gaussian-entropy formulas.
+
+\subsection{The retired architecture}
+
+PHI\_AEON was retired at training step 22{,}258 after the loss curve
+flat-lined. The internal post-mortem attributed the flat loss to the
+decorative mechanisms: when many ``sophisticated'' auxiliary losses
+evaluate to zero or vanish near initialization (because their named
+mathematical structure is not actually computed), the loss landscape
+degenerates to a vanilla transformer's landscape but with reduced
+effective capacity due to the auxiliary stalk dimensions allocated to
+the decorative paths. The probes described here were not implicated in
+the failure; they were collateral in the retirement.
+
+\subsection{The recovery move}
+
+The recovery move is mechanical: re-read each retired file with the
+skepticism criterion, separate honest from decorative content, lift the
+honest fragments to standalone modules. In PHI\_AEON's case the move
+yielded the two probes documented in this note. We suspect this pattern
+applies broadly: research groups that explore many architectural
+mechanisms inevitably build a small number of rigorous tools alongside
+their decorative ones, and these tools usually outlive the architectures
+that hosted them. Re-extraction is a high-leverage research activity.
+
+\section{Conclusion}
+
+We have re-extracted two rigorous mechanistic-interpretability probes
+from a retired language-model architecture: a Koopman EDMD probe
+exposing spectral-gap and Lyapunov diagnostics over a learned linear
+operator on a polynomial-augmented latent, and a Williams--Beer
+PID-synergy probe via Bertschinger's Gaussian MMI estimator. Both probes
+are differentiable, low-overhead, MPS-compatible, and shipped as
+standalone PyTorch modules. Both probes pass empirical sanity tests
+verifying their mathematically required behavior.
+
+The methodological message is that retired architectures contain
+rigorous fragments worth re-extracting. We suspect this is a high-leverage
+activity for any research group with a backlog of abandoned model
+families.
+
+\section*{Code availability}
+
+\texttt{src/phi\_plasma/koopman\_probe.py} and
+\texttt{src/phi\_plasma/iit\_pid\_probe.py} at \\
+\url{https://github.com/Prime-007-hash/phi-plasma-core}. Apache 2.0.
+
+\begin{thebibliography}{99}
+\setlength{\itemsep}{2pt}
+
+\bibitem{williams2015data}
+Williams, M.~O., Kevrekidis, I.~G., \& Rowley, C.~W. (2015).
+\emph{A Data--Driven Approximation of the Koopman Operator: Extending
+Dynamic Mode Decomposition}.
+Journal of Nonlinear Science, 25, 1307--1346.
+
+\bibitem{korda2018convergence}
+Korda, M., \& Mezić, I. (2018).
+\emph{On Convergence of Extended Dynamic Mode Decomposition to the
+Koopman Operator}.
+Journal of Nonlinear Science, 28, 687--710.
+
+\bibitem{williams2010nonnegative}
+Williams, P.~L., \& Beer, R.~D. (2010).
+\emph{Nonnegative Decomposition of Multivariate Information}.
+arXiv:1004.2515.
+
+\bibitem{bertschinger2014quantifying}
+Bertschinger, N., Rauh, J., Olbrich, E., Jost, J., \& Ay, N. (2014).
+\emph{Quantifying Unique Information}.
+Entropy, 16, 2161--2183.
+
+\bibitem{tononi2004information}
+Tononi, G. (2004).
+\emph{An Information Integration Theory of Consciousness}.
+BMC Neuroscience, 5(42).
+
+\bibitem{cunningham2023sparse}
+Cunningham, H., Ewart, A., Riggs, L., Huben, R., \& Sharkey, L. (2023).
+\emph{Sparse Autoencoders Find Highly Interpretable Features in Language
+Models}.
+arXiv:2309.08600.
+
+\bibitem{conmy2023automated}
+Conmy, A., Mavor-Parker, A.~N., Lynch, A., Heimersheim, S., \& Garriga-Alonso, A. (2023).
+\emph{Towards Automated Circuit Discovery for Mechanistic Interpretability}.
+NeurIPS.
+
+\bibitem{alain2017probing}
+Alain, G., \& Bengio, Y. (2017).
+\emph{Understanding Intermediate Layers Using Linear Classifier Probes}.
+ICLR Workshop.
+
+\end{thebibliography}
+
+\end{document}

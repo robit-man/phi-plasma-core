@@ -17,6 +17,7 @@ from .losses import combined_loss
 from .plasma_core import PlasmaCore
 from .symplectic_adamw import SymplecticAdamW
 from .vanilla_baseline import VanillaTransformer
+from .concentrate_model import ConcentrateModel, combined_concentrate_loss
 
 
 def pick_device() -> torch.device:
@@ -44,6 +45,19 @@ def build_model(cfg: dict, device: torch.device):
                        **common)
     elif arch == "vanilla":
         m = VanillaTransformer(ffn_mult=cfg.get("ffn_mult", 4), **common)
+    elif arch == "concentrate":
+        m = ConcentrateModel(
+            h_step=cfg.get("h_step", 0.5),
+            v_hidden_mult=cfg.get("v_hidden_mult", 2),
+            use_koopman=cfg.get("use_koopman", True),
+            koopman_latent_dim=cfg.get("koopman_latent_dim", 32),
+            use_iit_pid=cfg.get("use_iit_pid", True),
+            iit_n_partitions=cfg.get("iit_n_partitions", 4),
+            use_sheaf=cfg.get("use_sheaf", True),
+            sheaf_n_edge_types=cfg.get("sheaf_n_edge_types", 8),
+            sheaf_max_skip=cfg.get("sheaf_max_skip", 8),
+            **common,
+        )
     else:
         raise ValueError(f"unknown arch: {arch}")
     return m.to(device)
@@ -172,9 +186,22 @@ def main():
         set_lr(opt, lr_now)
 
         opt.zero_grad(set_to_none=True)
-        logits = model(x)
-        losses = combined_loss(model, logits, y, step,
-                                warmup=eig_warmup, lam_max=eig_max)
+        if cfg.get("arch") == "concentrate":
+            output = model(x)
+            losses = combined_concentrate_loss(
+                model, output, y, step,
+                eig_warmup=eig_warmup, eig_max=eig_max,
+                koopman_weight=cfg.get("koopman_weight", 1e-3),
+                iit_weight=cfg.get("iit_weight", 1e-4),
+                sheaf_weight=cfg.get("sheaf_weight", 1e-3),
+                koopman_warmup=cfg.get("koopman_warmup", 1000),
+                iit_warmup=cfg.get("iit_warmup", 1000),
+                sheaf_warmup=cfg.get("sheaf_warmup", 500),
+            )
+        else:
+            logits = model(x)
+            losses = combined_loss(model, logits, y, step,
+                                    warmup=eig_warmup, lam_max=eig_max)
         loss = losses["total"]
         loss.backward()
         if grad_clip > 0:
@@ -186,24 +213,40 @@ def main():
         if step % log_every == 0 or step == 1:
             dt = time.time() - t_start
             sps = step / dt
+
+            def _flt(v):
+                if isinstance(v, torch.Tensor):
+                    return float(v.detach())
+                return float(v)
+
             row = {
                 "step": step,
                 "loss": float(loss.detach()),
-                "nll": float(losses["nll"].detach()),
-                "eig": float(losses["eigensheaf"].detach() if isinstance(losses["eigensheaf"], torch.Tensor) else losses["eigensheaf"]),
-                "lam": float(losses["lambda"]),
+                "nll": _flt(losses["nll"]),
+                "eig": _flt(losses.get("eigensheaf", 0.0)),
+                "lam": _flt(losses.get("lambda", losses.get("lam_eig", 0.0))),
                 "lr": lr_now,
                 "sps": sps,
                 "elapsed_s": dt,
             }
+            # Concentrate-specific probe outputs
+            for k in ("koopman_residual", "phi_surrogate", "sheaf_loss",
+                       "lam_koopman", "lam_iit", "lam_sheaf"):
+                if k in losses:
+                    row[k] = _flt(losses[k])
             if hasattr(model, "head_isotypic_distances"):
                 dists = model.head_isotypic_distances()
                 row["head_iso_mean"] = sum(dists) / len(dists)
                 row["head_iso_max"] = max(dists)
             log_row(log_path, row)
+            extras = ""
+            if "koopman_residual" in row:
+                extras = (f"  koop_res={row['koopman_residual']:.3e}"
+                          f"  phi={row.get('phi_surrogate', 0.0):.3e}"
+                          f"  sheaf={row.get('sheaf_loss', 0.0):.3e}")
             print(f"[step {step:>6d}] nll={row['nll']:.4f}  ppl={math.exp(row['nll']):.1f}  "
-                  f"eig={row['eig']:.2e}  iso={row.get('head_iso_mean', float('nan')):.3f}  "
-                  f"lr={lr_now:.2e}  sps={sps:.2f}", flush=True)
+                  f"eig={row['eig']:.2e}  iso={row.get('head_iso_mean', float('nan')):.3f}"
+                  f"{extras}  lr={lr_now:.2e}  sps={sps:.2f}", flush=True)
 
         if step % eval_every == 0:
             ppl = eval_perplexity(model, val_loader, device)
