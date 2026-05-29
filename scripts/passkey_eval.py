@@ -127,7 +127,9 @@ def score_at_position(model, ctx_with_key, answer_slot, key_tokens, device):
     """Forward the model, return log P(key_tokens | context up to answer_slot)."""
     model.eval()
     x = ctx_with_key.unsqueeze(0).to(device)             # (1, T)
-    logits = model(x)                                     # (1, T, V)
+    out = model(x)
+    # concentrate models return dict; plasma/vanilla return logits tensor
+    logits = out["logits"] if isinstance(out, dict) else out  # (1, T, V)
     # The model predicts token t+1 from tokens 0..t.
     # answer_slot is where the key starts being placed.
     # To predict key[i] (at position answer_slot+i), we read logits[answer_slot+i-1].

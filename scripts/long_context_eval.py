@@ -90,7 +90,9 @@ def eval_at_seq_len(model, tokens, seq_len, device, max_windows=20):
         start = w * seq_len
         x = tokens[start:start+seq_len].unsqueeze(0).to(device)
         y = tokens[start+1:start+seq_len+1].unsqueeze(0).to(device)
-        logits = model(x)
+        out = model(x)
+        # concentrate models return dict; plasma/vanilla return logits tensor
+        logits = out["logits"] if isinstance(out, dict) else out
         B, T, V = logits.shape
         nll = torch.nn.functional.cross_entropy(
             logits.reshape(-1, V), y.reshape(-1), reduction="sum"
