@@ -1,0 +1,22 @@
+name = "phi-plasma-tracking"
+main = "cloudflare_worker.js"
+compatibility_date = "2026-05-29"
+workers_dev = true
+
+# After running `wrangler kv:namespace create "TRACK_LOGS"`, paste the
+# id below.
+# [[kv_namespaces]]
+# binding = "TRACK_LOGS"
+# id = "PASTE-YOUR-KV-NAMESPACE-ID-HERE"
+
+# Optional: stream events to Discord/Slack/your-own-server in real time.
+# Set the webhook URL as a secret:  wrangler secret put LOG_WEBHOOK_URL
+# Then uncomment the binding below:
+# [vars]
+# LOG_WEBHOOK_URL = "set-via-wrangler-secret-not-here"
+
+# After deploy, attach the worker to your custom domain.
+# Recommended: img.roko.network/preview.png
+# [[routes]]
+# pattern = "img.roko.network/preview.png"
+# zone_name = "roko.network"
