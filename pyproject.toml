@@ -10,6 +10,10 @@ dependencies = [
     "tqdm>=4.66",
 ]
 
+[project.scripts]
+phi-plasma-train = "phi_plasma.train:main"
+phi-plasma-dashboard = "phi_plasma.dashboard:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
@@ -17,6 +21,11 @@ dev = [
 ]
 plot = [
     "matplotlib>=3.8",
+]
+scale = [
+    "datasets>=2.20",
+    "transformers>=4.43",
+    "tokenizers>=0.19",
 ]
 
 [build-system]

@@ -70,6 +70,9 @@ logs/**/run.log
 logs/**/run.pid
 logs/v3_chain.log
 logs/v3_chain.pid
+logs/dashboard.log
+logs/dashboard.pid
+logs/dashboard_commands/
 
 # ───────────────────────────────────────────────────────────────────
 # Data / tokenizer caches (downloaded; not committed)

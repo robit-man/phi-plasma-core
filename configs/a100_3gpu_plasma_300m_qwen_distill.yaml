@@ -1,0 +1,50 @@
+# 3x A100 35B-teacher distillation demonstration.
+# Build packed data first with scripts/generate_synthetic_reasoning.py and
+# scripts/build_token_shards.py, then launch this config.
+
+arch: plasma
+out_dir: ./logs/a100_3gpu_plasma_300m_qwen_distill
+
+data_source: packed
+packed_data_dir: ./data/packed/qwen36_reasoning_qwen_tok
+
+vocab_size: 151936              # Qwen-family tokenizer default; overridden by packed meta if different
+d_hidden: 1536
+n_layers: 18
+n_heads: 24
+head_dim: 64
+seq_len: 2048
+h_step: 0.5
+v_hidden_mult: 2
+tie_embeddings: true
+
+optimizer: symplectic_adamw
+lr: 2.0e-4
+betas: [0.9, 0.95]
+weight_decay: 0.05
+lucas_decay: true
+grad_clip: 1.0
+
+batch_size: 1
+precision: bf16
+matmul_precision: high
+find_unused_parameters: false
+ddp_static_graph: true
+num_workers: 2
+pin_memory: true
+
+total_steps: 100000
+warmup: 1000
+eig_warmup: 1000
+eig_max: 0.0
+stride: 2048
+
+log_every: 10
+eval_every: 500
+ckpt_every: 1000
+
+convergence_window: 80
+convergence_train_slope_epsilon: 0.003
+convergence_val_min_delta: 0.001
+convergence_patience: 4
+seed: 0
