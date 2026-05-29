@@ -91,3 +91,5 @@ TODO.md.local
 # ───────────────────────────────────────────────────────────────────
 scripts/py
 scripts/overnight.sh
+# v0.2 — concentrate checkpoint, gitignore
+logs/concentrate_*/ckpt_*.pt

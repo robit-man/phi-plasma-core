@@ -12,6 +12,15 @@
 > **2.31× more stable validation perplexity across context length doublings
 > (1K → 64K tokens)** than a parameter-matched vanilla transformer baseline.
 
+> **🆕 v0.2 — Φ-CONCENTRATE**: composes the 5 keepers from a deep audit of
+> 30 prior phi-family models (Hecke + Symplectic-Hamiltonian + Koopman EDMD
+> + Williams-Beer PID + Fibonacci-skip sheaf consistency) into a single
+> ~18M-param model. Two of the mechanisms (Koopman EDMD with polynomial
+> lift, PID synergy via Gaussian MMI) are rigorous mechanistic-interpretability
+> probes that were extracted from a retired architecture. See
+> [`paper/probes/main.tex`](./paper/probes/main.tex) for the standalone
+> probes paper and `configs/concentrate_20m.yaml` for the composed model.
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Patent: Notice](https://img.shields.io/badge/Patent-Notice-orange.svg)](./PATENT_NOTICE.md)
 [![Status: Research Preview](https://img.shields.io/badge/Status-Research_Preview-yellow.svg)](#)
@@ -230,6 +239,30 @@ This is a **research preview**, not a production model.
 
 ---
 
+## Φ-CONCENTRATE — plasma v0.2
+
+Composes the 5 keepers from a deep audit of 30 prior phi-family neural
+networks. Run with:
+
+```bash
+PYTHONPATH=src python -m phi_plasma.train --config configs/concentrate_20m.yaml
+# ~17.75M params, ~95 min for 3K steps on M2 Pro
+```
+
+| Mechanism | Source | What it adds |
+|-----------|--------|--------------|
+| Hecke-Eigensheaf Attention | LOGOS | Algebraic head mixing at q=φ |
+| Symplectic-Hamiltonian Flow | plasma | Volume preservation across layers |
+| **Koopman EDMD Probe** | PHI_AEON L7 (extracted) | Spectral gap + Lyapunov diagnostics |
+| **Williams-Beer PID Probe** | PHI_AEON L12 (extracted) | Synergy via Gaussian MMI |
+| Sheaf Edge Consistency | world_model (cleaned) | Fibonacci-skip restriction maps |
+
+The two extracted probes (Koopman + PID) are standalone PyTorch modules in
+[`src/phi_plasma/koopman_probe.py`](./src/phi_plasma/koopman_probe.py) and
+[`src/phi_plasma/iit_pid_probe.py`](./src/phi_plasma/iit_pid_probe.py) —
+usable as interpretability tools attached to any transformer backbone.
+Documented in [`paper/probes/main.tex`](./paper/probes/main.tex).
+
 ## File layout
 
 ```
@@ -258,9 +291,13 @@ phi_plasma_core/
 │   ├── vanilla_baseline.py         — control transformer
 │   ├── symplectic_adamw.py         — Störmer-Verlet optimizer
 │   ├── chunked_attention.py        — eval-time memory-efficient attention
+│   ├── koopman_probe.py            — v0.2: EDMD polynomial lift + spectral diag
+│   ├── iit_pid_probe.py            — v0.2: Williams-Beer PID via Gaussian MMI
+│   ├── sheaf_consistency.py        — v0.2: Fibonacci-skip cellular sheaf
+│   ├── concentrate_model.py        — v0.2: composed Φ-CONCENTRATE model
 │   ├── data.py                     — WikiText-2 loader
 │   ├── losses.py                   — NLL + auxiliary penalties
-│   └── train.py                    — training loop
+│   └── train.py                    — training loop (handles plasma + vanilla + concentrate)
 ├── tests/                          — 4 invariant + 12 sanity tests (16/16 pass)
 └── scripts/
     ├── long_context_eval.py        — context-extension perplexity benchmark
