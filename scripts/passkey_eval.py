@@ -67,14 +67,15 @@ def build_model_from_cfg(cfg, seq_len_override=None):
                           v_hidden_mult=cfg.get("v_hidden_mult", 2),
                           **common)
     if cfg["arch"] == "concentrate":
+        # Probes off by default for retrieval eval — same reason as long-context
         return ConcentrateModel(
             h_step=cfg.get("h_step", 0.5),
             v_hidden_mult=cfg.get("v_hidden_mult", 2),
-            use_koopman=cfg.get("use_koopman", True),
+            use_koopman=cfg.get("eval_use_koopman", False),
             koopman_latent_dim=cfg.get("koopman_latent_dim", 32),
-            use_iit_pid=cfg.get("use_iit_pid", True),
+            use_iit_pid=cfg.get("eval_use_iit_pid", False),
             iit_n_partitions=cfg.get("iit_n_partitions", 4),
-            use_sheaf=cfg.get("use_sheaf", True),
+            use_sheaf=cfg.get("eval_use_sheaf", False),
             sheaf_n_edge_types=cfg.get("sheaf_n_edge_types", 8),
             sheaf_max_skip=cfg.get("sheaf_max_skip", 8),
             **common,
