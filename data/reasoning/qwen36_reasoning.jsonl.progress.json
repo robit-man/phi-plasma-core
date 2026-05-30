@@ -1,0 +1,1 @@
+{"pid": 3787658, "done": 0, "total": 50000, "ok": 0, "fail": 0, "rate_per_s": 0.0, "eta_s": null, "avg_response_chars": 0, "started_at": 207369.944968983, "updated_at": 207369.944968983, "model": "qwen3.6:35b", "out": "data/reasoning/qwen36_reasoning.jsonl"}

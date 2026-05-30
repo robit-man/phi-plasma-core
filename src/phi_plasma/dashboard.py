@@ -288,6 +288,137 @@ INDEX_HTML = r"""
     .stage-banner { padding: 8px 12px; background: var(--soft); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink); display: flex; gap: 12px; flex-wrap: wrap; }
     .stage-banner strong { color: var(--ink-strong); }
     .stage-banner .sep { color: var(--muted); }
+
+    /* ===== Tabbed pipeline layout ===== */
+    .tabnav {
+      position: sticky; top: 58px; z-index: 1;
+      background: var(--header-bg);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabnav::-webkit-scrollbar { display: none; }
+    .tab-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0;
+      white-space: nowrap;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+    }
+    .tab-pill:hover { color: var(--ink); border-color: var(--line-strong); }
+    .tab-pill[aria-current="true"] {
+      background: var(--soft);
+      color: var(--ink-strong);
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 18%, transparent);
+    }
+    .tab-pill .tab-step {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--chip-bg); color: var(--ink);
+      font-size: 11px; font-weight: 700;
+    }
+    .tab-pill[aria-current="true"] .tab-step { background: var(--teal); color: #fff; }
+    .tab-pill .tab-label { font-weight: 600; }
+    .tab-pill .tab-dot {
+      width: 8px; height: 8px; border-radius: 999px; background: var(--muted);
+      transition: background 120ms ease;
+    }
+    .tab-pill .tab-dot[data-status="pending"] { background: var(--muted); opacity: .55; }
+    .tab-pill .tab-dot[data-status="in_progress"] { background: var(--amber); box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 25%, transparent); }
+    .tab-pill .tab-dot[data-status="done"] { background: var(--green); }
+    .tab-pill.ghost { color: var(--muted); border-style: dashed; }
+    .tab-pill.ghost[aria-current="true"] { color: var(--ink-strong); border-style: solid; }
+    .tab-sep { color: var(--muted); opacity: .6; font-size: 14px; }
+    .tabnav-spacer { flex: 1 1 auto; }
+
+    .warning-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; font-size: 13px;
+      background: color-mix(in srgb, var(--amber) 14%, var(--panel));
+      border-bottom: 1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+      color: var(--ink);
+    }
+    .warning-bar[hidden] { display: none; }
+    .warning-bar-title { color: var(--amber); font-weight: 700; }
+    .warning-bar #warningBarText { flex: 1 1 auto; }
+    .warning-bar button {
+      background: transparent; border: 0; color: var(--muted); cursor: pointer;
+      font-size: 18px; line-height: 1; min-height: 0; padding: 4px 8px;
+    }
+
+    .workspace {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 16px 40px;
+      display: block;
+    }
+    .tab-page { display: none; }
+    .tab-page[data-active="true"] { display: grid; gap: 16px; }
+    .page-head { display: grid; gap: 4px; padding: 4px 2px 8px; }
+    .page-head h2 { font-size: 18px; color: var(--ink-strong); }
+    .page-sub { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.5; }
+    .page-sub code { background: var(--chip-bg); border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .card h3 { font-size: 14px; color: var(--ink-strong); margin: 0; }
+    .card .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .cards-2col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 880px) { .cards-2col { grid-template-columns: 1fr; } }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .action-row button { min-height: 36px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 11px; }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .train-grid { display: grid; grid-template-columns: minmax(220px, 320px) minmax(0, 1fr); gap: 14px; }
+    @media (max-width: 880px) { .train-grid { grid-template-columns: 1fr; } }
+    .train-runs .run-list { max-height: 320px; overflow: auto; }
+
+    .subtabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .subtab-btn { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; min-height: 32px; cursor: pointer; }
+    .subtab-btn.active { border-color: var(--teal); background: var(--soft); color: var(--ink-strong); }
+    .subtab-view { display: none; }
+    .subtab-view.active { display: block; }
+
+    .chat-card .chat-body { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; min-height: 360px; }
+
+    .console-body { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+    @media (max-width: 880px) { .console-body { grid-template-columns: 1fr; } }
+    .console-body .command-form { padding: 12px; }
+    .console-body .terminal { padding: 0; display: grid; grid-template-rows: auto 1fr; min-height: 440px; }
+    .console-body .terminal-head { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; justify-content: space-between; align-items: center; }
+    .console-body pre#commandLog { min-height: 380px; max-height: 70vh; }
+
+    .stage-progress { display: grid; gap: 6px; }
+    .stage-progress-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline; font-size: 13px; color: var(--ink); }
+    .stage-progress-row .muted { font-size: 11px; }
+    .stage-progress-row strong { font-variant-numeric: tabular-nums; }
+    .progress-bar { height: 6px; background: var(--chip-bg); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); width: 0; transition: width 400ms ease; }
+
+    button[data-stage-warn="true"] {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--amber) 30%, transparent);
+    }
+    button[data-stage-warn="true"]::before { content: "⚠ "; }
     @media (max-width: 1120px) {
       .shell { grid-template-columns: 240px minmax(0, 1fr); }
       .chat { grid-column: 1 / -1; }
@@ -318,117 +449,194 @@ INDEX_HTML = r"""
       <button id="refreshBtn">Refresh</button>
     </div>
   </header>
-  <main class="shell">
-    <aside class="panel sidebar">
-      <div class="panel-head"><h2>Session</h2><h3 id="activeSessionLabel">default</h3></div>
-      <div class="sidebar-section">
-        <div class="field">
-          <label for="sessionSelect">Active session</label>
-          <select id="sessionSelect"></select>
-        </div>
-        <div class="field">
-          <label for="newSessionName">Create new</label>
-          <div class="inline-row">
-            <input id="newSessionName" placeholder="my-experiment-01">
-            <button type="button" id="createSessionBtn">+ New</button>
-          </div>
-        </div>
+  <nav class="tabnav" id="tabnav" role="tablist" aria-label="Pipeline stages">
+    <button class="tab-pill" type="button" role="tab" data-tab="setup" data-stage-key="setup">
+      <span class="tab-step">1</span>
+      <span class="tab-label">Setup</span>
+      <span class="tab-dot" data-status="pending"></span>
+    </button>
+    <span class="tab-sep">›</span>
+    <button class="tab-pill" type="button" role="tab" data-tab="generate" data-stage-key="generate">
+      <span class="tab-step">2</span>
+      <span class="tab-label">Generate</span>
+      <span class="tab-dot" data-status="pending"></span>
+    </button>
+    <span class="tab-sep">›</span>
+    <button class="tab-pill" type="button" role="tab" data-tab="tokenize" data-stage-key="tokenize">
+      <span class="tab-step">3</span>
+      <span class="tab-label">Tokenize</span>
+      <span class="tab-dot" data-status="pending"></span>
+    </button>
+    <span class="tab-sep">›</span>
+    <button class="tab-pill" type="button" role="tab" data-tab="train" data-stage-key="train">
+      <span class="tab-step">4</span>
+      <span class="tab-label">Train</span>
+      <span class="tab-dot" data-status="pending"></span>
+    </button>
+    <span class="tab-sep">›</span>
+    <button class="tab-pill" type="button" role="tab" data-tab="evaluate" data-stage-key="evaluate">
+      <span class="tab-step">5</span>
+      <span class="tab-label">Evaluate</span>
+      <span class="tab-dot" data-status="pending"></span>
+    </button>
+    <span class="tabnav-spacer"></span>
+    <button class="tab-pill ghost" type="button" role="tab" data-tab="console">
+      <span class="tab-label">Console</span>
+    </button>
+  </nav>
+
+  <div class="warning-bar" id="warningBar" hidden>
+    <strong class="warning-bar-title">Heads up:</strong>
+    <span id="warningBarText">…</span>
+    <button type="button" id="warningBarClose" aria-label="Dismiss">×</button>
+  </div>
+
+  <main class="workspace">
+
+    <!-- ===== Tab 1: Setup ===== -->
+    <section class="tab-page" data-tab="setup">
+      <div class="page-head">
+        <h2>Setup — session, teacher, dependencies</h2>
+        <p class="page-sub">Pick or create a session, point at your Ollama teacher, install scale deps.
+        Each session keeps its own data, packed shards, checkpoints, and eval results under <code>sessions/&lt;name&gt;</code>.</p>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-head"><h2>Pipeline</h2><h3 id="pipelineSummary">scanning…</h3></div>
-      <div class="pipeline" id="pipelineList"></div>
-      <div class="panel-divider"></div>
-      <div class="panel-head"><h2>Runs</h2><h3 id="runCount">0</h3></div>
-      <div class="run-list" id="runList"></div>
-    </aside>
-
-    <section class="panel">
-      <div class="panel-head"><h2 id="runTitle">Loss</h2><h3 id="updatedAt">-</h3></div>
-      <div class="chart-wrap"><canvas id="lossChart"></canvas></div>
-      <div class="stats" id="stats"></div>
-      <div class="table-wrap"><table id="metricTable"></table></div>
-    </section>
-
-    <section class="panel chat">
-      <div class="panel-head"><h2>Checkpoint Chat</h2><h3 id="chatStatus">idle</h3></div>
-      <div class="chat-body">
-        <div class="chat-controls">
+      <div class="cards-2col">
+        <div class="card">
+          <h3>Session</h3>
           <div class="field">
-            <label for="checkpointSelect">Checkpoint</label>
-            <select id="checkpointSelect"></select>
+            <label for="sessionSelect">Active session</label>
+            <select id="sessionSelect"></select>
           </div>
-          <div class="grid-3">
-            <div class="field"><label for="maxNew">Tokens</label><input id="maxNew" type="number" min="1" max="512" value="64"></div>
-            <div class="field"><label for="temperature">Temp</label><input id="temperature" type="number" min="0" max="3" step="0.05" value="0.8"></div>
-            <div class="field"><label for="topK">Top-k</label><input id="topK" type="number" min="0" max="500" value="40"></div>
-          </div>
-        </div>
-        <div class="messages" id="messages"></div>
-        <form class="prompt" id="chatForm">
-          <textarea id="promptInput" placeholder="Text prompt or token ids"></textarea>
-          <div class="prompt-row">
-            <button type="button" id="clearBtn">Clear</button>
-            <button class="primary" type="submit" id="sendBtn">Send</button>
-          </div>
-        </form>
-      </div>
-    </section>
-    <section class="panel ops">
-      <div class="panel-head"><h2>Training & Data Control</h2><h3 id="dataStatus">data not scanned</h3></div>
-      <div class="ops-body">
-        <div class="op-column">
-          <h4>Training Runs</h4>
-          <div class="grid-3">
-            <div class="field"><label for="runSteps">Steps Override</label><input id="runSteps" type="number" min="0" value="0"></div>
-            <div class="field"><label for="evalPrompt">Eval Prompt</label><input id="evalPrompt" value="Solve step by step: If 3x + 7 = 31, what is x?"></div>
-            <div class="field"><label for="sampleTokens">Sample Tokens</label><input id="sampleTokens" type="number" min="1" max="1024" value="256"></div>
-          </div>
-          <div class="action-grid">
-            <button class="primary" type="button" data-preset="train_300m_distill" data-stage="train">[3] Start 300M Distill</button>
-            <button type="button" data-preset="smoke_300m_distill" data-stage="train">[3] Smoke 1 Step</button>
-            <button type="button" data-preset="train_byte_infer" data-stage="train">[3] Train Byte Model</button>
-            <button type="button" data-preset="check_convergence_session" data-stage="evaluate">[4] Session Convergence</button>
-            <button type="button" data-preset="check_convergence_selected" data-stage="evaluate">[4] Selected Run Convergence</button>
-            <button type="button" data-preset="sample_selected_checkpoint" data-stage="evaluate">[4] Sample Selected Ckpt</button>
-            <button type="button" data-preset="test_suite">Run Tests</button>
-          </div>
-        </div>
-        <div class="op-column">
-          <h4>Training Data (session-scoped)</h4>
-          <div class="grid-3">
-            <div class="field">
-              <label for="teacherModel">Teacher (Ollama)</label>
-              <select id="teacherModel"></select>
+          <div class="field">
+            <label for="newSessionName">Create new session</label>
+            <div class="inline-row">
+              <input id="newSessionName" placeholder="my-experiment-01">
+              <button type="button" id="createSessionBtn">+ New</button>
             </div>
+          </div>
+          <div class="hint" id="activeSessionLabel">default</div>
+        </div>
+        <div class="card">
+          <h3>Teacher (Ollama)</h3>
+          <div class="field">
+            <label for="teacherModel">Local model</label>
+            <select id="teacherModel"></select>
+          </div>
+          <div class="grid-2">
             <div class="field"><label for="sampleCount">Synthetic Count</label><input id="sampleCount" type="number" min="1" value="50000"></div>
             <div class="field"><label for="syntheticWorkers">Workers</label><input id="syntheticWorkers" type="number" min="1" max="32" value="1"></div>
           </div>
-          <div class="action-grid">
-            <button class="primary" type="button" data-preset="generate_synthetic" data-stage="generate">[1] Generate</button>
-            <button type="button" data-preset="generate_synthetic_smoke" data-stage="generate">[1] Smoke 20</button>
-            <button type="button" data-preset="pack_session_qwen" data-stage="tokenize">[2] Pack (Qwen tok)</button>
-            <button type="button" data-preset="pack_session_byte" data-stage="tokenize">[2] Pack (byte tok)</button>
-            <button type="button" data-preset="pack_hf_openorca" data-stage="tokenize">[2] Pack OpenOrca</button>
-            <button type="button" data-preset="pack_hf_tulu3" data-stage="tokenize">[2] Pack Tulu-3</button>
-            <button type="button" data-preset="pack_hf_slimorca" data-stage="tokenize">[2] Pack SlimOrca</button>
-            <button type="button" data-preset="pack_hf_math" data-stage="tokenize">[2] Pack MetaMath</button>
-            <button type="button" data-preset="install_scale_deps">Install Data Deps</button>
-            <button type="button" data-preset="ollama_models">List Ollama Models</button>
-            <button type="button" id="refreshDataBtn">Refresh Data</button>
+          <div class="action-row">
+            <button type="button" data-preset="ollama_models">List Models</button>
+            <button type="button" data-preset="install_scale_deps">Install Scale Deps</button>
+            <button type="button" data-preset="test_suite">Run Tests</button>
           </div>
-          <div class="artifact-list" id="artifactList"></div>
         </div>
       </div>
     </section>
 
-    <section class="panel telemetry">
-      <div class="panel-head"><h2>Training Telemetry</h2><h3 id="telemetryStatus">select a run</h3></div>
-      <div class="telemetry-body">
-        <div class="tabs">
-          <button class="tab-btn active" type="button" data-tab="gradView">Gradient Heatmap</button>
-          <button class="tab-btn" type="button" data-tab="lossTableView">Loss Table</button>
+    <!-- ===== Tab 2: Generate ===== -->
+    <section class="tab-page" data-tab="generate">
+      <div class="page-head">
+        <h2>Generate — synthetic teacher traces</h2>
+        <p class="page-sub">Calls the local Ollama teacher for each seed prompt and writes JSONL into the active session.
+        Output goes to <code id="genOutPath">sessions/&lt;active&gt;/data/reasoning.jsonl</code>.</p>
+      </div>
+      <div class="card">
+        <div class="action-row">
+          <button class="primary" type="button" data-preset="generate_synthetic" data-stage="generate">Generate Synthetic ({count})</button>
+          <button type="button" data-preset="generate_synthetic_smoke" data-stage="generate">Smoke 20</button>
+          <button type="button" id="refreshDataBtn">Refresh</button>
         </div>
-        <div class="tab-view active" id="gradView">
+        <div class="stage-progress" id="generateProgress">
+          <div class="stage-progress-row">
+            <span class="muted">records:</span><strong id="genRecords">0</strong>
+            <span class="muted">rate:</span><strong id="genRate">-</strong>
+            <span class="muted">eta:</span><strong id="genEta">-</strong>
+            <span class="muted">avg chars:</span><strong id="genAvgChars">-</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="genProgressFill" style="width:0%"></div></div>
+        </div>
+        <div class="hint">Watch the Console tab for the live log. Heartbeats also land in <code>&lt;out&gt;.progress.json</code>.</div>
+      </div>
+      <div class="card">
+        <h3>Recent JSONL outputs</h3>
+        <div class="artifact-list" id="artifactListGenerate"></div>
+      </div>
+    </section>
+
+    <!-- ===== Tab 3: Tokenize ===== -->
+    <section class="tab-page" data-tab="tokenize">
+      <div class="page-head">
+        <h2>Tokenize — pack JSONL into training shards</h2>
+        <p class="page-sub">Streams the session's JSONL (or a Hugging Face dataset) through a tokenizer and writes
+        packed <code>train.bin</code> / <code>validation.bin</code> + <code>meta.json</code> into
+        <code id="tokOutPath">sessions/&lt;active&gt;/packed/</code>.</p>
+      </div>
+      <div class="card">
+        <h3>Pack the session's synthetic data</h3>
+        <div class="action-row">
+          <button class="primary" type="button" data-preset="pack_session_qwen" data-stage="tokenize">Pack (Qwen tokenizer)</button>
+          <button type="button" data-preset="pack_session_byte" data-stage="tokenize">Pack (byte tokenizer)</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Or pack a public dataset</h3>
+        <p class="muted small">Caps at a sensible <code>--max-docs</code> so a smoke pack finishes in minutes.</p>
+        <div class="action-row">
+          <button type="button" data-preset="pack_hf_openorca" data-stage="tokenize">OpenOrca</button>
+          <button type="button" data-preset="pack_hf_tulu3" data-stage="tokenize">Tulu-3 SFT</button>
+          <button type="button" data-preset="pack_hf_slimorca" data-stage="tokenize">SlimOrca-Dedup</button>
+          <button type="button" data-preset="pack_hf_math" data-stage="tokenize">MetaMathQA</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Packed shards present</h3>
+        <div class="artifact-list" id="artifactListTokenize"></div>
+      </div>
+    </section>
+
+    <!-- ===== Tab 4: Train ===== -->
+    <section class="tab-page" data-tab="train">
+      <div class="page-head">
+        <h2>Train — distributed run on the packed shards</h2>
+        <p class="page-sub">Runs <code>train_3xa100.sh</code> with the session's packed dir as input and the session's
+        <code>run/</code> as the checkpoint output. Multi-session checkpoints stay isolated.</p>
+      </div>
+      <div class="train-grid">
+        <div class="card train-controls">
+          <h3>Launch</h3>
+          <div class="field"><label for="runSteps">Steps Override (0 = full)</label><input id="runSteps" type="number" min="0" value="0"></div>
+          <div class="action-row">
+            <button class="primary" type="button" data-preset="train_300m_distill" data-stage="train">Start 300M Distill</button>
+            <button type="button" data-preset="smoke_300m_distill" data-stage="train">Smoke 1 Step</button>
+            <button type="button" data-preset="train_byte_infer" data-stage="train">Train Byte</button>
+          </div>
+        </div>
+        <div class="card train-runs">
+          <h3>Runs <span class="muted small" id="runCount">0</span></h3>
+          <div class="run-list" id="runList"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3 id="runTitle">Loss</h3>
+          <span class="muted small" id="updatedAt">-</span>
+        </div>
+        <div class="chart-wrap"><canvas id="lossChart"></canvas></div>
+        <div class="stats" id="stats"></div>
+        <div class="table-wrap"><table id="metricTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Telemetry</h3>
+          <span class="muted small" id="telemetryStatus">select a run</span>
+        </div>
+        <div class="subtabs">
+          <button class="subtab-btn active" type="button" data-subtab="gradView">Gradient Heatmap</button>
+          <button class="subtab-btn" type="button" data-subtab="lossTableView">Loss Table</button>
+        </div>
+        <div class="subtab-view active" id="gradView">
           <div class="heatmap-tools">
             <input id="gradStepSlider" type="range" min="0" max="0" value="0">
             <span class="health" id="gradStepLabel">no gradient rows</span>
@@ -436,16 +644,71 @@ INDEX_HTML = r"""
           <canvas id="gradHeatmap"></canvas>
           <div class="grad-detail" id="gradDetail">No gradient telemetry yet. New training runs log per-module gradient norms.</div>
         </div>
-        <div class="tab-view" id="lossTableView">
+        <div class="subtab-view" id="lossTableView">
           <div class="table-wrap"><table id="telemetryTable"></table></div>
         </div>
       </div>
     </section>
 
-    <section class="panel console">
-      <div class="panel-head"><h2>Command Console</h2><h3 id="commandStatus">idle</h3></div>
+    <!-- ===== Tab 5: Evaluate ===== -->
+    <section class="tab-page" data-tab="evaluate">
+      <div class="page-head">
+        <h2>Evaluate — convergence checks &amp; checkpoint chat</h2>
+        <p class="page-sub">Runs convergence diagnostics on the active session's metrics and lets you sample any
+        checkpoint with a chat prompt.</p>
+      </div>
+      <div class="cards-2col">
+        <div class="card">
+          <h3>Diagnostics</h3>
+          <div class="grid-2">
+            <div class="field"><label for="evalPrompt">Eval Prompt</label><input id="evalPrompt" value="Solve step by step: If 3x + 7 = 31, what is x?"></div>
+            <div class="field"><label for="sampleTokens">Sample Tokens</label><input id="sampleTokens" type="number" min="1" max="1024" value="256"></div>
+          </div>
+          <div class="action-row">
+            <button type="button" data-preset="check_convergence_session" data-stage="evaluate">Session Convergence</button>
+            <button type="button" data-preset="check_convergence_selected" data-stage="evaluate">Selected Run Convergence</button>
+            <button type="button" data-preset="sample_selected_checkpoint" data-stage="evaluate">Sample Selected Ckpt</button>
+          </div>
+        </div>
+        <div class="card chat-card">
+          <div class="card-head">
+            <h3>Checkpoint Chat</h3>
+            <span class="muted small" id="chatStatus">idle</span>
+          </div>
+          <div class="chat-body">
+            <div class="chat-controls">
+              <div class="field">
+                <label for="checkpointSelect">Checkpoint</label>
+                <select id="checkpointSelect"></select>
+              </div>
+              <div class="grid-3">
+                <div class="field"><label for="maxNew">Tokens</label><input id="maxNew" type="number" min="1" max="512" value="64"></div>
+                <div class="field"><label for="temperature">Temp</label><input id="temperature" type="number" min="0" max="3" step="0.05" value="0.8"></div>
+                <div class="field"><label for="topK">Top-k</label><input id="topK" type="number" min="0" max="500" value="40"></div>
+              </div>
+            </div>
+            <div class="messages" id="messages"></div>
+            <form class="prompt" id="chatForm">
+              <textarea id="promptInput" placeholder="Text prompt or token ids"></textarea>
+              <div class="prompt-row">
+                <button type="button" id="clearBtn">Clear</button>
+                <button class="primary" type="submit" id="sendBtn">Send</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Tab 6: Console (raw command runner) ===== -->
+    <section class="tab-page" data-tab="console">
+      <div class="page-head">
+        <h2>Console — raw command runner &amp; live job log</h2>
+        <p class="page-sub">Run any preset directly, watch its output, stop misbehaving jobs.
+        This is also where the live log from any stage tab streams.</p>
+      </div>
       <div class="console-body">
-        <div class="command-form">
+        <div class="command-form card">
           <div class="field">
             <label for="presetSelect">Preset</label>
             <select id="presetSelect"></select>
@@ -460,17 +723,25 @@ INDEX_HTML = r"""
             <button class="primary" type="button" id="startJobBtn">Start</button>
           </div>
           <div class="field">
-            <label>Jobs</label>
+            <label>Jobs <span class="muted small" id="commandStatus">idle</span></label>
             <div class="job-list" id="jobList"></div>
           </div>
         </div>
-        <div class="terminal">
+        <div class="terminal card">
           <div class="terminal-head"><strong id="activeJobTitle">No job selected</strong><span class="health" id="activeJobMeta">-</span></div>
           <pre id="commandLog"></pre>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- hidden / unused but referenced by old JS: keep zero-impact placeholders -->
+  <div hidden>
+    <span id="pipelineSummary"></span>
+    <div id="pipelineList"></div>
+    <div id="dataStatus"></div>
+    <div id="artifactList"></div>
+  </div>
 
 <script>
 const state = {
@@ -1060,9 +1331,10 @@ $('stopJobBtn').addEventListener('click', stopJob);
 $('gradStepSlider').addEventListener('input', () => { state.selectedGradIndex = Number($('gradStepSlider').value || 0); drawGradHeatmap(); });
 document.querySelectorAll('[data-preset]').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (btn.dataset.gated === 'true') {
-      alert(`Stage ${btn.dataset.stage} is gated. Complete the previous stage first.`);
-      return;
+    const stage = btn.dataset.stage;
+    if (stage) {
+      const blocker = stageBlocker(stage);
+      if (blocker) warnStage(stage, blocker);
     }
     startPreset(btn.dataset.preset);
   });
@@ -1246,19 +1518,110 @@ function renderPipeline() {
   $('pipelineSummary').textContent = `${doneCount}/${state.pipeline.stages.length} stages done`;
 }
 
+function stageById(id) {
+  return state.pipeline?.stages?.find(s => s.id === id) || null;
+}
+
+function stageBlocker(id) {
+  const stage = stageById(id);
+  if (!stage || !stage.blocked_by) return null;
+  const upstream = stageById(stage.blocked_by);
+  return upstream ? upstream.label : stage.blocked_by;
+}
+
 function applyGating() {
+  // Soft mode: never block clicks. Mark stage buttons that have an unmet
+  // prerequisite so the UI flags them, and update the top tab dots.
   if (!state.pipeline) return;
-  const blocked = new Set();
+  const blockedStages = new Set();
   for (const stage of state.pipeline.stages) {
-    if (stage.blocked_by) blocked.add(stage.id);
+    if (stage.blocked_by) blockedStages.add(stage.id);
   }
   document.querySelectorAll('[data-stage]').forEach(btn => {
-    btn.dataset.gated = blocked.has(btn.dataset.stage) ? 'true' : 'false';
-    btn.title = blocked.has(btn.dataset.stage)
-      ? `Blocked: complete the previous stage in the active session first`
-      : '';
+    const blocker = stageBlocker(btn.dataset.stage);
+    if (blocker) {
+      btn.dataset.stageWarn = 'true';
+      btn.title = `Heads up: "${blocker}" hasn't produced its artifact yet. This will likely fail.`;
+    } else {
+      btn.dataset.stageWarn = 'false';
+      btn.title = '';
+    }
   });
+  // Update top-tab dots
+  for (const stage of state.pipeline.stages) {
+    const pill = document.querySelector(`.tab-pill[data-stage-key="${stage.id}"]`);
+    if (!pill) continue;
+    const dot = pill.querySelector('.tab-dot');
+    if (dot) dot.setAttribute('data-status', stage.status);
+  }
+  // Setup tab is "done" as soon as a session + teacher exist
+  const setupPill = document.querySelector('.tab-pill[data-stage-key="setup"] .tab-dot');
+  if (setupPill) {
+    const hasTeacher = !!$('teacherModel').value;
+    const hasSession = !!state.activeSession;
+    setupPill.setAttribute('data-status', (hasSession && hasTeacher) ? 'done' : 'in_progress');
+  }
 }
+
+let _warningTimer = null;
+function showWarning(message, autoHideMs = 7000) {
+  const bar = $('warningBar');
+  if (!bar) return;
+  $('warningBarText').textContent = message;
+  bar.hidden = false;
+  if (_warningTimer) clearTimeout(_warningTimer);
+  if (autoHideMs > 0) {
+    _warningTimer = setTimeout(() => { bar.hidden = true; }, autoHideMs);
+  }
+}
+function warnStage(stage, blocker) {
+  showWarning(`Stage "${stage}" needs "${blocker}" first. The command will still run, but expect it to fail until the previous artifact exists.`);
+}
+
+function setActiveTab(name) {
+  const valid = ['setup','generate','tokenize','train','evaluate','console'];
+  if (!valid.includes(name)) name = 'setup';
+  document.querySelectorAll('.tab-page').forEach(page => {
+    page.setAttribute('data-active', String(page.dataset.tab === name));
+  });
+  document.querySelectorAll('.tab-pill').forEach(pill => {
+    pill.setAttribute('aria-current', String(pill.dataset.tab === name));
+  });
+  state.activeTab = name;
+  try { localStorage.setItem('phi-tab', name); } catch (_) {}
+  // Tab-specific refresh hooks
+  if (name === 'train' || name === 'evaluate') {
+    drawChart(); drawGradHeatmap();
+  }
+}
+
+function pickInitialTab() {
+  try {
+    const saved = localStorage.getItem('phi-tab');
+    if (saved) { setActiveTab(saved); return; }
+  } catch (_) {}
+  // Auto-advance to the first non-done stage
+  if (state.pipeline?.stages) {
+    const first = state.pipeline.stages.find(s => s.status !== 'done');
+    if (first) { setActiveTab(first.id); return; }
+  }
+  setActiveTab('setup');
+}
+
+document.querySelectorAll('.tab-pill').forEach(pill => {
+  pill.addEventListener('click', () => setActiveTab(pill.dataset.tab));
+});
+const _warnClose = $('warningBarClose');
+if (_warnClose) _warnClose.addEventListener('click', () => { $('warningBar').hidden = true; });
+
+// Subtabs inside the Train > Telemetry card mirror the previous behavior.
+document.querySelectorAll('[data-subtab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.subtab-view').forEach(view => view.classList.toggle('active', view.id === btn.dataset.subtab));
+    drawGradHeatmap();
+  });
+});
 document.querySelectorAll('[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
