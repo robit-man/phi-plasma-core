@@ -169,6 +169,14 @@ def main() -> int:
     counts = {"train_docs": 0, "validation_docs": 0, "train_tokens": 0, "validation_tokens": 0}
     max_token_id = 0
     doc_i = 0
+    import time as _time
+    print(f"=== build_token_shards ===", flush=True)
+    print(f"tokenizer: {args.tokenizer} (vocab_size={vocab_size}, dtype={dtype})", flush=True)
+    print(f"inputs   : {args.input or '(none)'} hf={args.hf_dataset or '(none)'}", flush=True)
+    print(f"out      : {out_dir}", flush=True)
+    print(f"val_every: every {args.validation_every}th doc -> validation split", flush=True)
+    heartbeat_every = max(100, args.validation_every)
+    t0 = _time.monotonic()
     with train_path.open("wb") as train_f, val_path.open("wb") as val_f:
         for source in sources:
             for text in source:
@@ -187,8 +195,16 @@ def main() -> int:
                 else:
                     counts["train_docs"] += 1
                     counts["train_tokens"] += write_ids(train_f, ids, dtype)
+                if doc_i % heartbeat_every == 0:
+                    dt = max(_time.monotonic() - t0, 1e-6)
+                    rate = doc_i / dt
+                    tok_total = counts["train_tokens"] + counts["validation_tokens"]
+                    print(f"~~ {doc_i} docs | train={counts['train_docs']} val={counts['validation_docs']} "
+                          f"| tokens={tok_total} | {rate:.1f} docs/s | {dt:.1f}s elapsed", flush=True)
             if args.max_docs and doc_i >= args.max_docs:
                 break
+    dt = max(_time.monotonic() - t0, 1e-6)
+    print(f"=== finished tokenization | {doc_i} docs in {dt:.1f}s ({doc_i/dt:.1f} docs/s) ===", flush=True)
 
     if counts["validation_tokens"] == 0:
         raise SystemExit("validation split is empty; lower --validation-every or provide more docs")

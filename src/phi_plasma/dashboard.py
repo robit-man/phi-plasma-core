@@ -1228,7 +1228,7 @@ COMMAND_PRESETS = [
     {
         "id": "install_scale_deps",
         "label": "Install scale dependencies",
-        "command": "python -m pip install -e '.[scale]'",
+        "command": "python -m pip install --progress-bar on -e '.[scale]'",
     },
     {
         "id": "check_convergence_300m",
@@ -1298,15 +1298,46 @@ class CommandManager:
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
         self.jobs: dict[str, CommandJob] = {}
+        self._venv_lock = threading.Lock()
+        self._python_path: str | None = None
 
     def presets(self) -> list[dict[str, str]]:
         return list(COMMAND_PRESETS)
+
+    def python_executable(self) -> str:
+        if self._python_path is not None:
+            return self._python_path
+        with self._venv_lock:
+            if self._python_path is not None:
+                return self._python_path
+            venv_dir = self.root / ".venv"
+            venv_python = venv_dir / "bin" / "python"
+            if not venv_python.exists():
+                print(f"[dashboard] creating venv at {venv_dir} (one-time, ~15s)…", flush=True)
+                try:
+                    subprocess.run(
+                        [sys.executable, "-m", "venv", str(venv_dir)],
+                        check=True,
+                        cwd=str(self.root),
+                    )
+                    subprocess.run(
+                        [str(venv_python), "-m", "pip", "install", "--quiet", "--upgrade", "pip", "setuptools", "wheel"],
+                        check=False,
+                        cwd=str(self.root),
+                    )
+                    print(f"[dashboard] venv ready: {venv_python}", flush=True)
+                except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+                    print(f"[dashboard] venv bootstrap failed ({exc}); falling back to {sys.executable}", flush=True)
+                    self._python_path = sys.executable
+                    return self._python_path
+            self._python_path = str(venv_python)
+            return self._python_path
 
     def start(self, command: str, label: str = "custom") -> CommandJob:
         command = command.strip()
         if not command:
             raise ValueError("command is empty")
-        command = _PYTHON_TOKEN_RE.sub(sys.executable, command)
+        command = _PYTHON_TOKEN_RE.sub(self.python_executable(), command)
         job_id = uuid.uuid4().hex[:10]
         log_path = self.log_dir / f"{job_id}.log"
         env = os.environ.copy()
@@ -1407,6 +1438,7 @@ class DashboardState:
         self.logs_dir = logs_dir.resolve()
         self.runtime = CheckpointRuntime(self.root, device_spec)
         self.commands = CommandManager(self.root)
+        threading.Thread(target=self.commands.python_executable, daemon=True).start()
 
     def rel(self, path: Path) -> str:
         try:
