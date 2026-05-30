@@ -1,0 +1,10 @@
+{"prompt": "Solve a multi-step arithmetic word problem involving percentages and unit conversion."}
+{"prompt": "Prove or disprove a short logical claim using careful reasoning."}
+{"prompt": "Write and explain a small Python function that manipulates strings."}
+{"prompt": "Debug a short pseudocode snippet and explain the bug."}
+{"prompt": "Design an experiment to compare two training schedules."}
+{"prompt": "Explain a machine learning concept to an engineer using equations and intuition."}
+{"prompt": "Solve a probability problem with conditional events."}
+{"prompt": "Answer a reading-comprehension question from a supplied paragraph."}
+{"prompt": "Plan a minimal API for model checkpoint evaluation and monitoring."}
+{"prompt": "Given constraints, choose an architecture scaling plan and justify tradeoffs."}

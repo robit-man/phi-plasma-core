@@ -157,6 +157,101 @@ PYTHONPATH=src python -m phi_plasma.train --config configs/vanilla_18m.yaml
 # 3000 steps; vanilla val_ppl ≈ 374 at training context
 ```
 
+### 3x A100 distributed training
+
+The trainer supports `torchrun`/DDP. Rank 0 writes metrics and checkpoints;
+all ranks participate in validation reduction. `batch_size` is interpreted as
+per GPU unless `global_batch_size` is set.
+
+```bash
+bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_d704.yaml
+
+# Equivalent explicit launch:
+PYTHONPATH=src torchrun --standalone --nproc_per_node=3 \
+  -m phi_plasma.train --config configs/a100_3gpu_plasma_d704.yaml
+```
+
+The launcher defaults to `CUDA_VISIBLE_DEVICES=0,1,2` to avoid the
+non-A100 display GPU on this host. The A100 config uses BF16 autocast,
+per-GPU batch size 4, global batch size 12, rank-0 checkpointing, and
+JSONL metrics under `logs/a100_3gpu_plasma_d704/metrics.jsonl`. If no
+pre-tokenized cache is found, rank 0 bootstraps a byte-tokenized WikiText-2
+raw cache into `./.token_cache`; set `PHI_PLASMA_CACHE_DIR` or
+`data_cache_dir` to use an existing paper-tokenized cache.
+
+### One-command local training console
+
+```bash
+./start.sh
+```
+
+`start.sh` launches the localhost dashboard at `http://127.0.0.1:8765`,
+opens it in your browser, and leaves the dashboard logs in `logs/dashboard.log`.
+If 8765 is already occupied by an older dashboard, it falls forward to the next
+free localhost port unless you explicitly set `PORT`. Use the Training & Data
+Control panel for the common workflows: start 3x A100 training runs, smoke-test
+configs, generate Qwen/Ollama synthetic reasoning data, pack token shards, run
+convergence checks, run tests, and sample selected checkpoints. The same page
+inventories local seed prompts, synthetic JSONL files, packed token shards, and
+token caches so dataset state is visible before launching training.
+
+The Training Telemetry panel includes a gradient heatmap tab. New training runs
+log per-module gradient norms into `metrics.jsonl`, and the dashboard lets you
+slide from early to latest logged steps to inspect gradient variation during
+optimization. The command console remains below the buttons for transparency and
+manual overrides. Its endpoints are restricted to loopback clients because they
+intentionally execute local shell commands.
+
+Useful launcher overrides:
+
+```bash
+PORT=8876 ./start.sh
+DASHBOARD_DEVICE=cuda ./start.sh
+OPEN_BROWSER=0 ./start.sh
+```
+
+The dashboard tails `logs/*/metrics.jsonl`, charts loss/NLL, lists
+checkpoints, and provides checkpoint chat generation. It runs checkpoint chat
+on CPU by default so it does not take VRAM from active training; pass
+`DASHBOARD_DEVICE=cuda` or `DASHBOARD_DEVICE=auto` for GPU inference. Existing
+WikiText cache runs do not include a reversible text tokenizer, so chat accepts
+whitespace separated token IDs exactly and otherwise uses a byte fallback until
+a config adds `tokenizer_name` or `tokenizer_path`.
+
+Lower-level dashboard launch:
+
+```bash
+PYTHONPATH=src python -m phi_plasma.dashboard --port 8765
+```
+
+Check convergence explicitly instead of treating `total_steps` as proof of
+completion:
+
+```bash
+PYTHONPATH=src python scripts/convergence_check.py --run logs/a100_3gpu_plasma_d704
+```
+
+The trainer also writes a `convergence` row at evaluation/final time with train
+NLL slope, recent validation improvement, and a stop/continue recommendation.
+
+### 35B-teacher reasoning demonstration
+
+For a meaningful reasoning demo on 3 A100s, use local Qwen/Ollama teacher
+distillation rather than pretending this hardware can pretrain a 35B-equivalent
+model from scratch. See [`docs/SCALING_35B_REASONING_DEMO.md`](./docs/SCALING_35B_REASONING_DEMO.md).
+
+```bash
+# Generate local Qwen reasoning traces.
+PYTHONPATH=src python scripts/generate_synthetic_reasoning.py   --model qwen3.6:35b   --seed-prompts prompts/reasoning_seeds.jsonl   --out data/reasoning/qwen36_reasoning.jsonl   --count 50000
+
+# Pack with a Qwen-family tokenizer.
+pip install -e ".[scale]"
+PYTHONPATH=src python scripts/build_token_shards.py   --input data/reasoning/qwen36_reasoning.jsonl   --tokenizer Qwen/Qwen2.5-1.5B   --out data/packed/qwen36_reasoning_qwen_tok   --text-column text
+
+# Train the 300M-class plasma distillation demo.
+bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_300m_qwen_distill.yaml
+```
+
 ### Long-context comparison (the 2.31× result)
 
 ```bash
