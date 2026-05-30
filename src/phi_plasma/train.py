@@ -406,6 +406,12 @@ def main():
     ap.add_argument("--steps", type=int, default=None, help="override total_steps")
     ap.add_argument("--smoke", action="store_true",
                     help="smoke mode: 500 steps, smaller batch, more logging")
+    ap.add_argument("--out-dir", default=None,
+                    help="override out_dir (e.g. per-session checkpoint directory)")
+    ap.add_argument("--packed-dir", default=None,
+                    help="override packed_data_dir (e.g. per-session tokenized shards)")
+    ap.add_argument("--run-name", default=None,
+                    help="display-only run name appended to metrics rows")
     ap.add_argument("--local-rank", "--local_rank", type=int, default=None,
                     help=argparse.SUPPRESS)
     args = ap.parse_args()
@@ -419,6 +425,13 @@ def main():
 
         if args.steps is not None:
             cfg["total_steps"] = args.steps
+        if args.out_dir is not None:
+            cfg["out_dir"] = args.out_dir
+        if args.packed_dir is not None:
+            cfg["packed_data_dir"] = args.packed_dir
+            cfg["data_source"] = "packed"
+        if args.run_name is not None:
+            cfg["run_name"] = args.run_name
         if args.smoke:
             cfg["total_steps"] = 500
             cfg["batch_size"] = min(cfg.get("batch_size", 8), 4)

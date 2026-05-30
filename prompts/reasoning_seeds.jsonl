@@ -1,10 +1,66 @@
-{"prompt": "Solve a multi-step arithmetic word problem involving percentages and unit conversion."}
-{"prompt": "Prove or disprove a short logical claim using careful reasoning."}
-{"prompt": "Write and explain a small Python function that manipulates strings."}
-{"prompt": "Debug a short pseudocode snippet and explain the bug."}
-{"prompt": "Design an experiment to compare two training schedules."}
-{"prompt": "Explain a machine learning concept to an engineer using equations and intuition."}
-{"prompt": "Solve a probability problem with conditional events."}
-{"prompt": "Answer a reading-comprehension question from a supplied paragraph."}
-{"prompt": "Plan a minimal API for model checkpoint evaluation and monitoring."}
-{"prompt": "Given constraints, choose an architecture scaling plan and justify tradeoffs."}
+{"category": "math", "prompt": "Solve a multi-step arithmetic word problem involving percentages and unit conversion. Show each conversion explicitly."}
+{"category": "math", "prompt": "Compute the area of a triangle given two sides and the included angle. State the formula, then plug in numbers."}
+{"category": "math", "prompt": "Given a quadratic equation with real coefficients, find its roots using the discriminant. Comment on real vs complex roots."}
+{"category": "math", "prompt": "A geometric series has first term a and ratio r where |r| < 1. Derive the closed-form sum and apply it to a concrete example."}
+{"category": "math", "prompt": "Simplify a rational expression and identify excluded values of the variable."}
+{"category": "math", "prompt": "Find the derivative of a composite function using the chain rule. Then evaluate it at a specific point."}
+{"category": "math", "prompt": "Solve a system of two linear equations in two unknowns by substitution. Verify the solution by back-substitution."}
+{"category": "math", "prompt": "Compute the expected value and variance of a discrete random variable from a small probability table."}
+{"category": "math", "prompt": "Use modular arithmetic to compute a^b mod m for moderate exponents. Show repeated squaring."}
+{"category": "math", "prompt": "A walker starts at the origin and takes biased coin-flip steps. Compute the probability of returning to origin after N steps."}
+{"category": "logic", "prompt": "Prove or disprove a short logical claim using careful step-by-step reasoning."}
+{"category": "logic", "prompt": "Given premises about a small set of people and their roles, deduce who is telling the truth. Show the elimination process."}
+{"category": "logic", "prompt": "Identify the logical fallacy in a short argument and rewrite the argument validly."}
+{"category": "logic", "prompt": "Translate a natural-language statement into propositional logic and determine when it is true."}
+{"category": "logic", "prompt": "Given a small Sudoku-style constraint puzzle, solve it and explain the deductions used."}
+{"category": "code", "prompt": "Write and explain a small Python function that manipulates strings with proper edge-case handling."}
+{"category": "code", "prompt": "Implement binary search over a sorted list of integers in Python. Explain the invariants and termination conditions."}
+{"category": "code", "prompt": "Refactor a snippet of nested loops into a single comprehension. Preserve behaviour and explain the change."}
+{"category": "code", "prompt": "Debug a short pseudocode snippet, identify the bug, propose a fix, and explain why the fix is correct."}
+{"category": "code", "prompt": "Implement a linked-list reverse-in-place in Python. Sketch a quick trace on a 3-node example."}
+{"category": "code", "prompt": "Write a SQL query that joins two tables and computes a per-group aggregate. Briefly justify the join type."}
+{"category": "code", "prompt": "Implement a memoized recursive function (e.g. Fibonacci or coin-change) in Python. Compare time complexity to the naive version."}
+{"category": "code", "prompt": "Write a JSON-parsing function that validates a payload against a small schema. Reject malformed inputs with a specific error."}
+{"category": "code", "prompt": "Sketch a unit test (pytest) for a function that handles edge cases like empty input, negative numbers, and large inputs."}
+{"category": "code", "prompt": "Given a Python function that has a subtle off-by-one error, identify the issue and write the corrected version."}
+{"category": "science", "prompt": "Explain the conservation of energy in a frictionless pendulum and compute its period for small angles."}
+{"category": "science", "prompt": "Describe how mRNA vaccines elicit an immune response. Use accessible language but stay technically correct."}
+{"category": "science", "prompt": "Given a simple circuit (resistor + battery), compute the current using Ohm's law. Then add a parallel resistor and recompute."}
+{"category": "science", "prompt": "Describe the difference between weather and climate, and give one example of each from a recent decade."}
+{"category": "science", "prompt": "Explain why entropy tends to increase in isolated systems, using a concrete molecular example."}
+{"category": "ml", "prompt": "Explain why label smoothing tends to improve generalisation in classification models. Cite the intuition, not paper references."}
+{"category": "ml", "prompt": "Compare AdamW with SGD-momentum for transformer pretraining: where does each shine?"}
+{"category": "ml", "prompt": "Explain the role of layer normalisation and why it appears before vs after attention in different architectures."}
+{"category": "ml", "prompt": "What is a learning-rate warmup, and why does it help stabilise early training of large models?"}
+{"category": "ml", "prompt": "Sketch the difference between rotary position embeddings and learned absolute position embeddings."}
+{"category": "ml", "prompt": "Explain how mixed-precision training (bf16) reduces memory while preserving stability. Where does loss scaling matter?"}
+{"category": "ml", "prompt": "Compare distillation from a strong teacher vs supervised training from scratch for a 300M-parameter student. Where do gains come from?"}
+{"category": "ml", "prompt": "Describe gradient accumulation and explain when it matters for DDP training."}
+{"category": "ml", "prompt": "Outline an evaluation suite for a small reasoning model: which tasks would you include and why?"}
+{"category": "reading", "prompt": "Answer a reading-comprehension question from a supplied paragraph. State the evidence span from the passage."}
+{"category": "reading", "prompt": "Summarise a multi-paragraph passage in 3 sentences. Preserve the main claim, the evidence, and the caveat."}
+{"category": "reading", "prompt": "Identify the author's main thesis from a short essay excerpt and rebut it in 2 sentences."}
+{"category": "writing", "prompt": "Write a 4-line poem about reaching convergence after many failed training runs. Keep it clear and grounded."}
+{"category": "writing", "prompt": "Draft a 1-paragraph commit message for a feature that adds gradient checkpointing to a transformer block."}
+{"category": "writing", "prompt": "Write a short Slack message asking a teammate to review a PR. Be brief and concrete about scope."}
+{"category": "design", "prompt": "Design a minimal API for model checkpoint evaluation and monitoring. List 3 endpoints and their inputs/outputs."}
+{"category": "design", "prompt": "Sketch a data pipeline that ingests raw web text, deduplicates, tokenises, and packs into 2048-token shards. Mention failure modes."}
+{"category": "design", "prompt": "Given constraints (3x A100-80GB, 100B tokens, 1 week), choose an architecture scaling plan and justify the tradeoffs."}
+{"category": "design", "prompt": "Propose a feature-flag rollout for a new training kernel. List the metrics you'd watch and the abort criteria."}
+{"category": "structured", "prompt": "Convert a short natural-language record about an order (customer, items, total) into a JSON object matching a fixed schema."}
+{"category": "structured", "prompt": "Given a CSV header and one row of data, produce the corresponding YAML representation."}
+{"category": "structured", "prompt": "Extract named entities (person, org, location, date) from a short news-style sentence and emit them as a JSON object."}
+{"category": "structured", "prompt": "Given an unstructured shipping notification email, produce a structured JSON with tracking_id, carrier, eta, and address."}
+{"category": "multistep", "prompt": "Plan a 3-step debugging session for a flaky CI test that fails 1 in 20 runs. State the hypothesis at each step."}
+{"category": "multistep", "prompt": "Walk through migrating a small Flask app to FastAPI. List the steps and a rollback plan."}
+{"category": "multistep", "prompt": "Diagnose a training run where loss plateaus after step 1000. Enumerate the top 5 hypotheses and an experiment for each."}
+{"category": "multistep", "prompt": "Plan a tokeniser swap (BPE -> SentencePiece) for an existing 3B-token corpus. Mention compatibility risks."}
+{"category": "probability", "prompt": "A bag has 5 red and 7 blue marbles. Draw two without replacement; compute the probability both are red."}
+{"category": "probability", "prompt": "A test for a rare disease has 99% sensitivity and 95% specificity. Given base rate 1%, compute P(disease | positive)."}
+{"category": "probability", "prompt": "Two independent Bernoulli(p) trials. Compute the probability that the second succeeds given at least one succeeds."}
+{"category": "rl", "prompt": "Explain the difference between on-policy and off-policy reinforcement learning with a concrete example."}
+{"category": "rl", "prompt": "Sketch how PPO clips importance ratios and why that stabilises training compared to vanilla policy gradient."}
+{"category": "rl", "prompt": "Compare reward hacking risks between a sparse human-preference reward and a dense engineered reward."}
+{"category": "data", "prompt": "Given two datasets of different sizes, describe a deduplication strategy that preserves quality while removing exact and near-duplicates."}
+{"category": "data", "prompt": "Outline a data-mixing strategy for pretraining: web, code, math, dialogue. Justify mix ratios for a 100B-token budget."}
+{"category": "data", "prompt": "Describe how to detect and filter low-quality samples in a synthetic distillation dataset. Mention concrete signals."}

@@ -43,14 +43,55 @@ INDEX_HTML = r"""
       color-scheme: light;
       --bg: #f5f7f3;
       --panel: #ffffff;
+      --panel-elev: #ffffff;
       --ink: #172126;
+      --ink-strong: #0d1518;
       --muted: #64727a;
       --line: #d9e0dc;
+      --line-strong: #b9c4be;
       --teal: #137c72;
+      --teal-soft: #1a8f83;
       --blue: #315f9f;
       --amber: #b56b17;
       --red: #b24034;
+      --green: #2a7d3e;
       --soft: #edf3f0;
+      --header-bg: rgba(255,255,255,0.92);
+      --input-bg: #ffffff;
+      --code-bg: #101820;
+      --code-fg: #d7ede8;
+      --chip-bg: #eef3f0;
+      --user-msg-bg: #eef4fb;
+      --user-msg-bd: #cbd9ea;
+      --model-msg-bg: #f8f5ee;
+      --model-msg-bd: #eadcc6;
+    }
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0f1518;
+      --panel: #16201f;
+      --panel-elev: #1c2826;
+      --ink: #dfe8e3;
+      --ink-strong: #f4f7f5;
+      --muted: #8b9a93;
+      --line: #2a3733;
+      --line-strong: #3a4a44;
+      --teal: #4fbfae;
+      --teal-soft: #5fd2c0;
+      --blue: #7ba6e8;
+      --amber: #e9b97e;
+      --red: #e9817b;
+      --green: #74d189;
+      --soft: #1f2c29;
+      --header-bg: rgba(15,21,24,0.92);
+      --input-bg: #1c2826;
+      --code-bg: #0a1112;
+      --code-fg: #cfe5dd;
+      --chip-bg: #1c2826;
+      --user-msg-bg: #1c2a36;
+      --user-msg-bd: #2d4860;
+      --model-msg-bg: #2b2620;
+      --model-msg-bd: #4a3f2c;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
@@ -69,7 +110,8 @@ INDEX_HTML = r"""
       gap: 16px;
       padding: 0 18px;
       border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,0.92);
+      background: var(--header-bg);
+      backdrop-filter: blur(8px);
       position: sticky;
       top: 0;
       z-index: 2;
@@ -99,10 +141,12 @@ INDEX_HTML = r"""
     select, input, textarea {
       border: 1px solid var(--line);
       border-radius: 6px;
-      background: #fff;
+      background: var(--input-bg);
       padding: 8px 9px;
       outline: none;
+      color: var(--ink);
     }
+    select:focus, input:focus, textarea:focus { border-color: var(--teal); }
     textarea { resize: vertical; min-height: 96px; line-height: 1.35; }
     .shell {
       display: grid;
@@ -137,7 +181,7 @@ INDEX_HTML = r"""
       padding: 10px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--panel);
     }
     .run-item.active { border-color: var(--teal); background: var(--soft); }
     .run-name { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -193,7 +237,7 @@ INDEX_HTML = r"""
     .action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .action-grid button { min-height: 38px; white-space: normal; line-height: 1.18; }
     .artifact-list { display: grid; gap: 8px; max-height: 260px; overflow: auto; }
-    .artifact-item { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .artifact-item { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
     .artifact-title { font-weight: 650; font-size: 12px; overflow-wrap: anywhere; }
     .artifact-meta { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
     .telemetry-body { border-top: 1px solid var(--line); }
@@ -203,7 +247,7 @@ INDEX_HTML = r"""
     .tab-view.active { display: block; }
     .heatmap-tools { display: grid; grid-template-columns: minmax(180px, 1fr) auto; gap: 10px; align-items: center; margin-bottom: 10px; }
     .heatmap-tools input[type=range] { width: 100%; }
-    #gradHeatmap { height: 380px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    #gradHeatmap { height: 380px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
     .grad-detail { margin-top: 8px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
     .console { grid-column: 1 / -1; }
     .console-body { display: grid; grid-template-columns: minmax(320px, 440px) minmax(0, 1fr); min-height: 520px; }
@@ -212,13 +256,38 @@ INDEX_HTML = r"""
     .command-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
     .command-form > .field { min-height: 0; }
     .job-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; min-height: 80px; overflow-y: auto; overflow-x: hidden; }
-    .job-item { text-align: left; display: grid; gap: 4px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+    .job-item { text-align: left; display: grid; gap: 4px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
     .job-item.active { border-color: var(--teal); background: var(--soft); }
     .job-title { font-weight: 650; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .job-meta { color: var(--muted); font-size: 11px; }
     .terminal { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
     .terminal-head { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; justify-content: space-between; align-items: center; }
-    pre#commandLog { margin: 0; padding: 12px; overflow: auto; background: #101820; color: #d7ede8; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.42; white-space: pre-wrap; min-height: 440px; }
+    pre#commandLog { margin: 0; padding: 12px; overflow: auto; background: var(--code-bg); color: var(--code-fg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.42; white-space: pre-wrap; min-height: 440px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .chip { background: var(--chip-bg); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+    #themeToggleBtn { min-width: 38px; padding: 0 10px; }
+    .sidebar { display: flex; flex-direction: column; min-height: 0; }
+    .sidebar-section { padding: 10px 12px 6px; display: grid; gap: 8px; }
+    .inline-row { display: flex; gap: 6px; }
+    .inline-row input { flex: 1 1 auto; min-width: 0; }
+    .inline-row button { white-space: nowrap; }
+    .panel-divider { height: 1px; background: var(--line); margin: 4px 0; }
+    .pipeline { padding: 6px 10px 10px; display: grid; gap: 6px; }
+    .pipeline-item { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); align-items: center; }
+    .pipeline-item .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--muted); }
+    .pipeline-item[data-status="pending"] .dot { background: var(--muted); }
+    .pipeline-item[data-status="in_progress"] .dot { background: var(--amber); box-shadow: 0 0 0 4px rgba(181,107,23,.18); }
+    .pipeline-item[data-status="done"] .dot { background: var(--green); }
+    .pipeline-item[data-status="done"] { border-color: color-mix(in srgb, var(--green) 30%, var(--line)); }
+    .pipeline-item[data-status="in_progress"] { border-color: color-mix(in srgb, var(--amber) 35%, var(--line)); }
+    .pipeline-label { font-size: 12px; font-weight: 650; color: var(--ink); }
+    .pipeline-detail { font-size: 11px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pipeline-step-num { font-size: 10px; color: var(--muted); }
+    button[data-gated="true"] { opacity: .42; cursor: not-allowed; }
+    button[data-gated="true"]::after { content: " ⛔"; }
+    .stage-banner { padding: 8px 12px; background: var(--soft); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink); display: flex; gap: 12px; flex-wrap: wrap; }
+    .stage-banner strong { color: var(--ink-strong); }
+    .stage-banner .sep { color: var(--muted); }
     @media (max-width: 1120px) {
       .shell { grid-template-columns: 240px minmax(0, 1fr); }
       .chat { grid-column: 1 / -1; }
@@ -243,10 +312,32 @@ INDEX_HTML = r"""
       <h1>Phi Plasma Dashboard</h1>
       <div class="health" id="health">Starting</div>
     </div>
-    <button id="refreshBtn">Refresh</button>
+    <div class="header-actions">
+      <span class="chip" id="sessionChip">session: -</span>
+      <button id="themeToggleBtn" title="Toggle dark/light mode">☾</button>
+      <button id="refreshBtn">Refresh</button>
+    </div>
   </header>
   <main class="shell">
-    <aside class="panel">
+    <aside class="panel sidebar">
+      <div class="panel-head"><h2>Session</h2><h3 id="activeSessionLabel">default</h3></div>
+      <div class="sidebar-section">
+        <div class="field">
+          <label for="sessionSelect">Active session</label>
+          <select id="sessionSelect"></select>
+        </div>
+        <div class="field">
+          <label for="newSessionName">Create new</label>
+          <div class="inline-row">
+            <input id="newSessionName" placeholder="my-experiment-01">
+            <button type="button" id="createSessionBtn">+ New</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-head"><h2>Pipeline</h2><h3 id="pipelineSummary">scanning…</h3></div>
+      <div class="pipeline" id="pipelineList"></div>
+      <div class="panel-divider"></div>
       <div class="panel-head"><h2>Runs</h2><h3 id="runCount">0</h3></div>
       <div class="run-list" id="runList"></div>
     </aside>
@@ -293,25 +384,34 @@ INDEX_HTML = r"""
             <div class="field"><label for="sampleTokens">Sample Tokens</label><input id="sampleTokens" type="number" min="1" max="1024" value="256"></div>
           </div>
           <div class="action-grid">
-            <button class="primary" type="button" data-preset="train_300m_distill">Start 300M Distill</button>
-            <button type="button" data-preset="smoke_300m_distill">Smoke 1 Step</button>
-            <button type="button" data-preset="train_byte_infer">Train Byte Model</button>
-            <button type="button" data-preset="check_convergence_selected">Evaluate Selected Run</button>
-            <button type="button" data-preset="sample_selected_checkpoint">Sample Selected Checkpoint</button>
-            <button type="button" data-preset="test_suite">Run Test Suite</button>
+            <button class="primary" type="button" data-preset="train_300m_distill" data-stage="train">[3] Start 300M Distill</button>
+            <button type="button" data-preset="smoke_300m_distill" data-stage="train">[3] Smoke 1 Step</button>
+            <button type="button" data-preset="train_byte_infer" data-stage="train">[3] Train Byte Model</button>
+            <button type="button" data-preset="check_convergence_session" data-stage="evaluate">[4] Session Convergence</button>
+            <button type="button" data-preset="check_convergence_selected" data-stage="evaluate">[4] Selected Run Convergence</button>
+            <button type="button" data-preset="sample_selected_checkpoint" data-stage="evaluate">[4] Sample Selected Ckpt</button>
+            <button type="button" data-preset="test_suite">Run Tests</button>
           </div>
         </div>
         <div class="op-column">
-          <h4>Training Data</h4>
+          <h4>Training Data (session-scoped)</h4>
           <div class="grid-3">
-            <div class="field"><label for="teacherModel">Teacher</label><input id="teacherModel" value="qwen3.6:35b"></div>
+            <div class="field">
+              <label for="teacherModel">Teacher (Ollama)</label>
+              <select id="teacherModel"></select>
+            </div>
             <div class="field"><label for="sampleCount">Synthetic Count</label><input id="sampleCount" type="number" min="1" value="50000"></div>
             <div class="field"><label for="syntheticWorkers">Workers</label><input id="syntheticWorkers" type="number" min="1" max="32" value="1"></div>
           </div>
           <div class="action-grid">
-            <button class="primary" type="button" data-preset="generate_synthetic">Generate Synthetic</button>
-            <button type="button" data-preset="generate_synthetic_smoke">Generate 20 Smoke</button>
-            <button type="button" data-preset="pack_qwen_shards">Pack Qwen Shards</button>
+            <button class="primary" type="button" data-preset="generate_synthetic" data-stage="generate">[1] Generate</button>
+            <button type="button" data-preset="generate_synthetic_smoke" data-stage="generate">[1] Smoke 20</button>
+            <button type="button" data-preset="pack_session_qwen" data-stage="tokenize">[2] Pack (Qwen tok)</button>
+            <button type="button" data-preset="pack_session_byte" data-stage="tokenize">[2] Pack (byte tok)</button>
+            <button type="button" data-preset="pack_hf_openorca" data-stage="tokenize">[2] Pack OpenOrca</button>
+            <button type="button" data-preset="pack_hf_tulu3" data-stage="tokenize">[2] Pack Tulu-3</button>
+            <button type="button" data-preset="pack_hf_slimorca" data-stage="tokenize">[2] Pack SlimOrca</button>
+            <button type="button" data-preset="pack_hf_math" data-stage="tokenize">[2] Pack MetaMath</button>
             <button type="button" data-preset="install_scale_deps">Install Data Deps</button>
             <button type="button" data-preset="ollama_models">List Ollama Models</button>
             <button type="button" id="refreshDataBtn">Refresh Data</button>
@@ -373,7 +473,12 @@ INDEX_HTML = r"""
   </main>
 
 <script>
-const state = { runs: [], metrics: [], checkpoints: [], artifacts: [], selectedRun: null, presets: [], jobs: [], selectedJob: null, selectedGradIndex: 0 };
+const state = {
+  runs: [], metrics: [], checkpoints: [], artifacts: [],
+  selectedRun: null, presets: [], jobs: [], selectedJob: null, selectedGradIndex: 0,
+  ollamaModels: [], ollamaReachable: null,
+  sessions: [], activeSession: 'default', pipeline: null,
+};
 const $ = (id) => document.getElementById(id);
 
 async function getJSON(url, options) {
@@ -736,6 +841,8 @@ async function refreshAll() {
   renderStats();
   renderCheckpoints();
   if (state.selectedRun) await selectRun(state.selectedRun);
+  await refreshSessions().catch(() => {});
+  await refreshPipeline().catch(() => {});
 }
 
 function addMessage(kind, text, meta) {
@@ -794,19 +901,32 @@ function shellQuote(value) {
 
 function presetVars() {
   const steps = Number($('runSteps').value || 0);
-  const selectedCheckpoint = $('checkpointSelect').value || 'logs/a100_3gpu_plasma_300m_qwen_distill/ckpt_final.pt';
-  const selectedRun = state.selectedRun || 'a100_3gpu_plasma_300m_qwen_distill';
+  const sessionName = state.activeSession || 'default';
+  const sessionPaths = state.pipeline?.paths || {};
+  const selectedCheckpoint = $('checkpointSelect').value
+    || `${sessionPaths.session_run_dir || 'sessions/' + sessionName + '/run'}/ckpt_final.pt`;
+  const selectedRun = state.selectedRun || `${sessionName}/run`;
+  const selectedRunPath = state.selectedRun
+    ? `logs/${state.selectedRun}`
+    : (sessionPaths.session_run_dir || `sessions/${sessionName}/run`);
   return {
-    teacher: $('teacherModel').value || 'qwen3.6:35b',
+    teacher: $('teacherModel').value || 'qwen3:4b',
+    ollama_host: 'http://127.0.0.1:11434',
     count: $('sampleCount').value || '50000',
     workers: $('syntheticWorkers').value || '1',
     steps: String(steps),
     maybe_steps: steps > 0 ? ` --steps ${steps}` : '',
     selected_run: selectedRun,
-    selected_run_path: shellQuote(`logs/${selectedRun}`),
+    selected_run_path: shellQuote(selectedRunPath),
     selected_checkpoint: shellQuote(selectedCheckpoint),
     eval_prompt: shellQuote($('evalPrompt').value || 'Solve step by step: If 3x + 7 = 31, what is x?'),
     sample_tokens: $('sampleTokens').value || '256',
+    session_name: sessionName,
+    session_dir: shellQuote(sessionPaths.session_dir || `sessions/${sessionName}`),
+    session_data_jsonl: shellQuote(sessionPaths.session_data_jsonl || `sessions/${sessionName}/data/reasoning.jsonl`),
+    session_packed_dir: shellQuote(sessionPaths.session_packed_dir || `sessions/${sessionName}/packed`),
+    session_run_dir: shellQuote(sessionPaths.session_run_dir || `sessions/${sessionName}/run`),
+    session_eval_dir: shellQuote(sessionPaths.session_eval_dir || `sessions/${sessionName}/eval`),
   };
 }
 
@@ -930,14 +1050,215 @@ $('presetSelect').addEventListener('change', applyPreset);
 for (const id of ['teacherModel', 'sampleCount', 'runSteps', 'syntheticWorkers', 'evalPrompt', 'sampleTokens']) {
   $(id).addEventListener('input', applyPreset);
 }
+$('teacherModel').addEventListener('change', () => persistSessionConfig());
+$('sampleCount').addEventListener('change', () => persistSessionConfig());
+$('syntheticWorkers').addEventListener('change', () => persistSessionConfig());
 $('reloadPresetsBtn').addEventListener('click', () => Promise.all([refreshPresets(), refreshJobs(), refreshArtifacts()]).catch(err => alert(err.message)));
 $('refreshDataBtn').addEventListener('click', () => refreshArtifacts().catch(err => alert(err.message)));
 $('startJobBtn').addEventListener('click', () => startJob());
 $('stopJobBtn').addEventListener('click', stopJob);
 $('gradStepSlider').addEventListener('input', () => { state.selectedGradIndex = Number($('gradStepSlider').value || 0); drawGradHeatmap(); });
 document.querySelectorAll('[data-preset]').forEach(btn => {
-  btn.addEventListener('click', () => startPreset(btn.dataset.preset));
+  btn.addEventListener('click', () => {
+    if (btn.dataset.gated === 'true') {
+      alert(`Stage ${btn.dataset.stage} is gated. Complete the previous stage first.`);
+      return;
+    }
+    startPreset(btn.dataset.preset);
+  });
 });
+
+// --- theme toggle (persists to localStorage) ---
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = $('themeToggleBtn');
+  if (btn) btn.textContent = (theme === 'dark') ? '☼' : '☾';
+  try { localStorage.setItem('phi-theme', theme); } catch (_) {}
+}
+(function initTheme() {
+  let theme = 'light';
+  try { theme = localStorage.getItem('phi-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  catch (_) {}
+  applyTheme(theme);
+})();
+$('themeToggleBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+// --- session selector ---
+$('sessionSelect').addEventListener('change', async () => {
+  const name = $('sessionSelect').value;
+  try {
+    await getJSON('/api/sessions/activate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    state.activeSession = name;
+    await Promise.all([refreshSessions(), refreshPipeline()]);
+    applyPreset();
+  } catch (err) { alert(err.message); }
+});
+$('createSessionBtn').addEventListener('click', async () => {
+  const name = ($('newSessionName').value || '').trim();
+  if (!name) { alert('Enter a session name.'); return; }
+  try {
+    await getJSON('/api/sessions/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        model: $('teacherModel').value || 'qwen3:4b',
+        count: Number($('sampleCount').value || 50000),
+        workers: Number($('syntheticWorkers').value || 1),
+      })
+    });
+    await getJSON('/api/sessions/activate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    state.activeSession = name;
+    $('newSessionName').value = '';
+    await Promise.all([refreshSessions(), refreshPipeline()]);
+    applyPreset();
+  } catch (err) { alert(err.message); }
+});
+
+async function persistSessionConfig() {
+  if (!state.activeSession) return;
+  try {
+    await getJSON('/api/sessions/update', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: state.activeSession,
+        model: $('teacherModel').value,
+        count: Number($('sampleCount').value || 0) || null,
+        workers: Number($('syntheticWorkers').value || 0) || null,
+      })
+    });
+  } catch (_) {}
+}
+
+async function refreshSessions() {
+  const data = await getJSON('/api/sessions');
+  state.sessions = data.sessions || [];
+  state.activeSession = data.active || 'default';
+  const sel = $('sessionSelect');
+  const old = sel.value;
+  sel.replaceChildren();
+  for (const s of state.sessions) {
+    const opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = `${s.name}${s.model ? ' · ' + s.model : ''}`;
+    sel.appendChild(opt);
+  }
+  sel.value = state.activeSession;
+  $('activeSessionLabel').textContent = state.activeSession;
+  $('sessionChip').textContent = `session: ${state.activeSession}`;
+  // hydrate config inputs from active session
+  const active = state.sessions.find(s => s.name === state.activeSession);
+  if (active) {
+    if (active.model && !document.activeElement?.matches('#teacherModel')) {
+      const opt = [...$('teacherModel').options].find(o => o.value === active.model);
+      if (opt) $('teacherModel').value = active.model;
+    }
+    if (active.count && !document.activeElement?.matches('#sampleCount')) {
+      $('sampleCount').value = active.count;
+    }
+    if (active.workers && !document.activeElement?.matches('#syntheticWorkers')) {
+      $('syntheticWorkers').value = active.workers;
+    }
+  }
+}
+
+async function refreshOllamaModels() {
+  let data;
+  try { data = await getJSON('/api/ollama/models'); }
+  catch (err) { state.ollamaReachable = false; renderOllamaDropdown([]); return; }
+  state.ollamaReachable = !!data.reachable;
+  state.ollamaModels = data.models || [];
+  renderOllamaDropdown(state.ollamaModels);
+}
+
+function renderOllamaDropdown(models) {
+  const sel = $('teacherModel');
+  const current = sel.value;
+  sel.replaceChildren();
+  if (!state.ollamaReachable) {
+    const opt = document.createElement('option');
+    opt.value = ''; opt.textContent = '(Ollama unreachable — start `ollama serve`)';
+    sel.appendChild(opt);
+    return;
+  }
+  if (!models.length) {
+    const opt = document.createElement('option');
+    opt.value = ''; opt.textContent = '(no local models — run `ollama pull <model>`)';
+    sel.appendChild(opt);
+    return;
+  }
+  for (const m of models) {
+    const opt = document.createElement('option');
+    opt.value = m.name;
+    const sizeGB = (m.size_mb || 0) / 1024;
+    const params = m.details?.parameter_size || '';
+    opt.textContent = `${m.name} · ${sizeGB.toFixed(1)} GB${params ? ' · ' + params : ''}`;
+    sel.appendChild(opt);
+  }
+  // restore selection: explicit, then session-config, then first
+  const active = state.sessions.find(s => s.name === state.activeSession);
+  const preferred = current || active?.model;
+  if (preferred && models.some(m => m.name === preferred)) sel.value = preferred;
+  applyPreset();
+}
+
+async function refreshPipeline() {
+  let data;
+  try { data = await getJSON('/api/pipeline/state'); }
+  catch (err) { return; }
+  state.pipeline = data;
+  renderPipeline();
+  applyGating();
+  applyPreset();
+}
+
+function renderPipeline() {
+  const list = $('pipelineList');
+  list.replaceChildren();
+  if (!state.pipeline || !state.pipeline.stages) {
+    const div = document.createElement('div'); div.className = 'empty'; div.textContent = 'no pipeline state';
+    list.appendChild(div); return;
+  }
+  let doneCount = 0;
+  for (const stage of state.pipeline.stages) {
+    if (stage.status === 'done') doneCount++;
+    const row = document.createElement('div');
+    row.className = 'pipeline-item';
+    row.setAttribute('data-status', stage.status);
+    const dot = document.createElement('div'); dot.className = 'dot';
+    const center = document.createElement('div');
+    const label = document.createElement('div'); label.className = 'pipeline-label'; label.textContent = stage.label;
+    const detail = document.createElement('div'); detail.className = 'pipeline-detail'; detail.textContent = stage.detail || '';
+    center.append(label, detail);
+    const right = document.createElement('div'); right.className = 'pipeline-step-num';
+    right.textContent = stage.status === 'done' ? '✓' : stage.status === 'in_progress' ? '…' : '·';
+    row.append(dot, center, right);
+    list.appendChild(row);
+  }
+  $('pipelineSummary').textContent = `${doneCount}/${state.pipeline.stages.length} stages done`;
+}
+
+function applyGating() {
+  if (!state.pipeline) return;
+  const blocked = new Set();
+  for (const stage of state.pipeline.stages) {
+    if (stage.blocked_by) blocked.add(stage.id);
+  }
+  document.querySelectorAll('[data-stage]').forEach(btn => {
+    btn.dataset.gated = blocked.has(btn.dataset.stage) ? 'true' : 'false';
+    btn.title = blocked.has(btn.dataset.stage)
+      ? `Blocked: complete the previous stage in the active session first`
+      : '';
+  });
+}
 document.querySelectorAll('[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
@@ -948,9 +1269,12 @@ document.querySelectorAll('[data-tab]').forEach(btn => {
 
 window.addEventListener('resize', () => { drawChart(); drawGradHeatmap(); });
 refreshAll().catch(err => { $('health').textContent = err.message; });
+refreshOllamaModels().catch(() => {});
 setInterval(() => refreshAll().catch(() => {}), 5000);
 setInterval(() => refreshJobs().catch(() => {}), 2000);
 setInterval(() => refreshArtifacts().catch(() => {}), 10000);
+setInterval(() => refreshPipeline().catch(() => {}), 4000);
+setInterval(() => refreshOllamaModels().catch(() => {}), 30000);
 Promise.all([refreshPresets(), refreshJobs(), refreshArtifacts()]).catch(() => {});
 </script>
 </body>
@@ -1195,72 +1519,267 @@ _PYTHON_TOKEN_RE = re.compile(r"(?<![\w./-])python(?![\w./-])")
 
 
 COMMAND_PRESETS = [
-    {
-        "id": "train_byte_infer",
-        "label": "Train byte inference model",
-        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_byte_infer.yaml{maybe_steps}",
-    },
-    {
-        "id": "train_300m_distill",
-        "label": "Train 300M Qwen distill",
-        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_300m_qwen_distill.yaml{maybe_steps}",
-    },
-    {
-        "id": "smoke_300m_distill",
-        "label": "Smoke 300M Qwen distill",
-        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_300m_qwen_distill.yaml --steps 1",
-    },
+    # --- Stage 1: synthetic data generation (session-isolated) ---
     {
         "id": "generate_synthetic",
-        "label": "Generate Qwen reasoning JSONL",
-        "command": "PYTHONPATH=src python scripts/generate_synthetic_reasoning.py --model {teacher} --seed-prompts prompts/reasoning_seeds.jsonl --out data/reasoning/qwen36_reasoning.jsonl --count {count} --workers {workers}",
+        "label": "[1] Generate reasoning JSONL (session)",
+        "stage": "generate",
+        "command": "PYTHONPATH=src python scripts/generate_synthetic_reasoning.py --model {teacher} --host {ollama_host} --seed-prompts prompts/reasoning_seeds.jsonl --out {session_data_jsonl} --count {count} --workers {workers} --heartbeat-every 5",
     },
     {
         "id": "generate_synthetic_smoke",
-        "label": "Generate 20 Qwen smoke records",
-        "command": "PYTHONPATH=src python scripts/generate_synthetic_reasoning.py --model {teacher} --seed-prompts prompts/reasoning_seeds.jsonl --out data/reasoning/qwen36_reasoning_smoke.jsonl --count 20 --workers 1",
+        "label": "[1] Generate 20 smoke records (session)",
+        "stage": "generate",
+        "command": "PYTHONPATH=src python scripts/generate_synthetic_reasoning.py --model {teacher} --host {ollama_host} --seed-prompts prompts/reasoning_seeds.jsonl --out {session_data_jsonl} --count 20 --workers 1 --heartbeat-every 5",
+    },
+    # --- Stage 2: tokenization / packing ---
+    {
+        "id": "pack_session_qwen",
+        "label": "[2] Pack session JSONL (Qwen tokenizer)",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --input {session_data_jsonl} --tokenizer Qwen/Qwen2.5-1.5B --out {session_packed_dir} --text-column text --validation-every 100",
     },
     {
-        "id": "pack_qwen_shards",
-        "label": "Pack Qwen reasoning shards",
-        "command": "PYTHONPATH=src python scripts/build_token_shards.py --input data/reasoning/qwen36_reasoning.jsonl --tokenizer Qwen/Qwen2.5-1.5B --out data/packed/qwen36_reasoning_qwen_tok --text-column text --validation-every 100",
+        "id": "pack_session_byte",
+        "label": "[2] Pack session JSONL (byte tokenizer)",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --input {session_data_jsonl} --tokenizer byte --out {session_packed_dir} --text-column text --validation-every 100",
     },
     {
-        "id": "install_scale_deps",
-        "label": "Install scale dependencies",
-        "command": "python -m pip install --progress-bar on -e '.[scale]'",
+        "id": "pack_hf_openorca",
+        "label": "[2] Pack OpenOrca (HF) → session",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --hf-dataset Open-Orca/OpenOrca --hf-split train --text-column response --tokenizer Qwen/Qwen2.5-1.5B --out {session_packed_dir} --max-docs 50000 --validation-every 200",
     },
     {
-        "id": "check_convergence_300m",
-        "label": "Check 300M convergence",
-        "command": "PYTHONPATH=src python scripts/convergence_check.py --run logs/a100_3gpu_plasma_300m_qwen_distill",
+        "id": "pack_hf_tulu3",
+        "label": "[2] Pack Tulu-3 SFT (HF) → session",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --hf-dataset allenai/tulu-3-sft-mixture --hf-split train --text-column messages --tokenizer Qwen/Qwen2.5-1.5B --out {session_packed_dir} --max-docs 30000 --validation-every 200",
     },
+    {
+        "id": "pack_hf_slimorca",
+        "label": "[2] Pack SlimOrca-Dedup (HF) → session",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --hf-dataset Open-Orca/SlimOrca-Dedup --hf-split train --text-column conversations --tokenizer Qwen/Qwen2.5-1.5B --out {session_packed_dir} --max-docs 30000 --validation-every 200",
+    },
+    {
+        "id": "pack_hf_math",
+        "label": "[2] Pack MetaMathQA (HF) → session",
+        "stage": "tokenize",
+        "command": "PYTHONPATH=src python scripts/build_token_shards.py --hf-dataset meta-math/MetaMathQA --hf-split train --text-column response --tokenizer Qwen/Qwen2.5-1.5B --out {session_packed_dir} --max-docs 20000 --validation-every 200",
+    },
+    # --- Stage 3: training (session-isolated checkpoints) ---
+    {
+        "id": "train_300m_distill",
+        "label": "[3] Train 300M distill (session)",
+        "stage": "train",
+        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_300m_qwen_distill.yaml --out-dir {session_run_dir} --packed-dir {session_packed_dir} --run-name {session_name}{maybe_steps}",
+    },
+    {
+        "id": "smoke_300m_distill",
+        "label": "[3] Smoke train 1 step (session)",
+        "stage": "train",
+        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_300m_qwen_distill.yaml --out-dir {session_run_dir} --packed-dir {session_packed_dir} --run-name {session_name} --steps 1",
+    },
+    {
+        "id": "train_byte_infer",
+        "label": "[3] Train byte inference (session)",
+        "stage": "train",
+        "command": "bash scripts/train_3xa100.sh configs/a100_3gpu_plasma_byte_infer.yaml --out-dir {session_run_dir} --packed-dir {session_packed_dir} --run-name {session_name}{maybe_steps}",
+    },
+    # --- Stage 4: evaluation ---
     {
         "id": "check_convergence_selected",
-        "label": "Evaluate selected run convergence",
+        "label": "[4] Check convergence (selected run)",
+        "stage": "evaluate",
         "command": "PYTHONPATH=src python scripts/convergence_check.py --run {selected_run_path}",
     },
     {
-        "id": "sample_300m",
-        "label": "Sample 300M checkpoint",
-        "command": "PYTHONPATH=src python scripts/generate.py --ckpt logs/a100_3gpu_plasma_300m_qwen_distill/ckpt_final.pt --prompt 'Solve step by step: If 3x + 7 = 31, what is x?' --device cuda --max-new-tokens 256",
-    },
-    {
         "id": "sample_selected_checkpoint",
-        "label": "Deploy/sample selected checkpoint",
+        "label": "[4] Sample from selected checkpoint",
+        "stage": "evaluate",
         "command": "PYTHONPATH=src python scripts/generate.py --ckpt {selected_checkpoint} --prompt {eval_prompt} --device cuda --max-new-tokens {sample_tokens}",
     },
     {
+        "id": "check_convergence_session",
+        "label": "[4] Check convergence (active session)",
+        "stage": "evaluate",
+        "command": "PYTHONPATH=src python scripts/convergence_check.py --run {session_run_dir}",
+    },
+    # --- Utilities ---
+    {
+        "id": "install_scale_deps",
+        "label": "[utility] Install scale dependencies",
+        "stage": "setup",
+        "command": "python -m pip install --progress-bar on -e '.[scale]'",
+    },
+    {
         "id": "ollama_models",
-        "label": "List Ollama models",
+        "label": "[utility] List Ollama models",
+        "stage": "setup",
         "command": "ollama list",
     },
     {
         "id": "test_suite",
-        "label": "Run tests",
+        "label": "[utility] Run tests",
+        "stage": "setup",
         "command": "PYTHONPATH=src pytest tests/",
     },
 ]
+
+
+_SESSION_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$")
+
+
+def _safe_session_name(name: str) -> str:
+    name = (name or "").strip()
+    if not _SESSION_NAME_RE.match(name):
+        raise ValueError(
+            "session name must match [A-Za-z0-9][A-Za-z0-9_.-]{0,62} "
+            "(letters, digits, underscore, dot, dash; start alphanumeric)"
+        )
+    return name
+
+
+class SessionManager:
+    """Per-experiment workspace: data, packed shards, checkpoints, config.
+
+    Layout under <root>/sessions/<name>/:
+        config.json   — session metadata (model, count, created_at)
+        data/         — synthetic JSONL outputs
+        packed/       — packed token shards (meta.json marks readiness)
+        run/          — training output (metrics.jsonl + ckpt_*.pt)
+        eval/         — evaluation artifacts
+    """
+
+    def __init__(self, root: Path):
+        self.root = root.resolve()
+        self.base = self.root / "sessions"
+        self.base.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
+        active_file = self.base / "active.txt"
+        if not active_file.exists():
+            active_file.write_text("default\n", encoding="utf-8")
+        try:
+            self.ensure("default", model="qwen3:4b")
+        except ValueError:
+            pass
+
+    def session_dir(self, name: str) -> Path:
+        name = _safe_session_name(name)
+        return self.base / name
+
+    def paths(self, name: str) -> dict[str, str]:
+        d = self.session_dir(name)
+        return {
+            "session_name": name,
+            "session_dir": str(d),
+            "session_data_jsonl": str(d / "data" / "reasoning.jsonl"),
+            "session_packed_dir": str(d / "packed"),
+            "session_run_dir": str(d / "run"),
+            "session_eval_dir": str(d / "eval"),
+            "session_config": str(d / "config.json"),
+        }
+
+    def ensure(self, name: str, model: str = "qwen3:4b") -> dict[str, Any]:
+        d = self.session_dir(name)
+        with self._lock:
+            (d / "data").mkdir(parents=True, exist_ok=True)
+            (d / "packed").mkdir(parents=True, exist_ok=True)
+            (d / "run").mkdir(parents=True, exist_ok=True)
+            (d / "eval").mkdir(parents=True, exist_ok=True)
+            cfg_path = d / "config.json"
+            if cfg_path.exists():
+                try:
+                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    cfg = {}
+            else:
+                cfg = {}
+            cfg.setdefault("name", name)
+            cfg.setdefault("created_at", time.time())
+            cfg.setdefault("model", model)
+            cfg.setdefault("count", 50000)
+            cfg.setdefault("workers", 1)
+            cfg_path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+        return cfg
+
+    def update(self, name: str, **fields: Any) -> dict[str, Any]:
+        cfg = self.ensure(name)
+        cfg.update({k: v for k, v in fields.items() if v is not None})
+        cfg["updated_at"] = time.time()
+        (self.session_dir(name) / "config.json").write_text(
+            json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+        return cfg
+
+    def active(self) -> str:
+        active_file = self.base / "active.txt"
+        try:
+            name = active_file.read_text(encoding="utf-8").strip() or "default"
+        except OSError:
+            name = "default"
+        try:
+            return _safe_session_name(name)
+        except ValueError:
+            return "default"
+
+    def set_active(self, name: str) -> str:
+        name = _safe_session_name(name)
+        self.ensure(name)
+        (self.base / "active.txt").write_text(name + "\n", encoding="utf-8")
+        return name
+
+    def list(self) -> list[dict[str, Any]]:
+        result = []
+        for path in sorted(self.base.iterdir()):
+            if not path.is_dir():
+                continue
+            try:
+                _safe_session_name(path.name)
+            except ValueError:
+                continue
+            cfg_path = path / "config.json"
+            cfg: dict[str, Any] = {}
+            if cfg_path.exists():
+                try:
+                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    cfg = {}
+            result.append({
+                "name": path.name,
+                "model": cfg.get("model"),
+                "count": cfg.get("count"),
+                "workers": cfg.get("workers"),
+                "created_at": cfg.get("created_at"),
+                "updated_at": cfg.get("updated_at"),
+            })
+        return result
+
+
+def fetch_ollama_models(host: str = "http://127.0.0.1:11434", timeout: float = 3.0) -> dict[str, Any]:
+    import urllib.request as _urllib_request
+    import urllib.error as _urllib_error
+    url = host.rstrip("/") + "/api/tags"
+    try:
+        with _urllib_request.urlopen(url, timeout=timeout) as response:
+            obj = json.loads(response.read().decode("utf-8"))
+    except (_urllib_error.URLError, TimeoutError, ValueError) as exc:
+        return {"reachable": False, "host": host, "error": str(exc), "models": []}
+    models = []
+    for m in obj.get("models", []):
+        models.append({
+            "name": m.get("name"),
+            "size_mb": (m.get("size", 0) or 0) / (1024 * 1024),
+            "modified_at": m.get("modified_at"),
+            "details": {
+                "family": (m.get("details", {}) or {}).get("family"),
+                "parameter_size": (m.get("details", {}) or {}).get("parameter_size"),
+                "quantization": (m.get("details", {}) or {}).get("quantization_level"),
+            },
+        })
+    models.sort(key=lambda x: (x.get("size_mb") or 0))
+    return {"reachable": True, "host": host, "models": models}
 
 
 @dataclass
@@ -1438,7 +1957,135 @@ class DashboardState:
         self.logs_dir = logs_dir.resolve()
         self.runtime = CheckpointRuntime(self.root, device_spec)
         self.commands = CommandManager(self.root)
+        self.sessions = SessionManager(self.root)
         threading.Thread(target=self.commands.python_executable, daemon=True).start()
+
+    def pipeline_state(self, session: str | None = None) -> dict[str, Any]:
+        name = session or self.sessions.active()
+        try:
+            paths = self.sessions.paths(name)
+        except ValueError as exc:
+            return {"error": str(exc)}
+        cfg_path = Path(paths["session_config"])
+        cfg: dict[str, Any] = {}
+        if cfg_path.exists():
+            try:
+                cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                cfg = {}
+
+        jsonl = Path(paths["session_data_jsonl"])
+        packed = Path(paths["session_packed_dir"])
+        run = Path(paths["session_run_dir"])
+        meta_json = packed / "meta.json"
+
+        # generate
+        jsonl_records = count_lines(jsonl) if jsonl.exists() else 0
+        jsonl_size = jsonl.stat().st_size if jsonl.exists() else 0
+        progress_path = jsonl.with_suffix(jsonl.suffix + ".progress.json")
+        progress: dict[str, Any] = {}
+        if progress_path.exists():
+            try:
+                progress = json.loads(progress_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                progress = {}
+
+        # tokenize
+        packed_meta: dict[str, Any] = {}
+        tokens_total = 0
+        if meta_json.exists():
+            try:
+                packed_meta = json.loads(meta_json.read_text(encoding="utf-8"))
+                splits = packed_meta.get("splits") or {}
+                tokens_total = int((splits.get("train") or {}).get("tokens") or 0) \
+                    + int((splits.get("validation") or {}).get("tokens") or 0)
+            except (OSError, json.JSONDecodeError):
+                packed_meta = {}
+
+        # train
+        ckpts: list[dict[str, Any]] = []
+        metrics_count = 0
+        latest_step = 0
+        if run.exists():
+            metrics_path = run / "metrics.jsonl"
+            if metrics_path.exists():
+                rows = read_jsonl(metrics_path)
+                metrics_count = len(rows)
+                if rows:
+                    latest_step = int(rows[-1].get("step") or 0)
+            for p in sorted(run.glob("ckpt_*.pt"), key=lambda x: x.stat().st_mtime, reverse=True):
+                ckpts.append({
+                    "name": p.name,
+                    "path": self.rel(p),
+                    "step": parse_step_from_name(p),
+                    "size_mb": p.stat().st_size / (1024 * 1024),
+                    "updated_at": p.stat().st_mtime,
+                })
+
+        def status_for(condition: bool, partial: bool = False) -> str:
+            if condition:
+                return "done"
+            if partial:
+                return "in_progress"
+            return "pending"
+
+        stages = [
+            {
+                "id": "generate",
+                "label": "1. Synthetic data",
+                "status": status_for(jsonl_records >= max(1, int(cfg.get("count", 50000) // 4)),
+                                     partial=jsonl_records > 0),
+                "detail": (f"{jsonl_records} records | "
+                           f"{jsonl_size/1024/1024:.1f} MB" if jsonl_records else "no records yet"),
+                "artifact": self.rel(jsonl) if jsonl.exists() else paths["session_data_jsonl"],
+                "exists": jsonl.exists(),
+                "records": jsonl_records,
+                "progress": progress,
+            },
+            {
+                "id": "tokenize",
+                "label": "2. Tokenize / pack",
+                "status": status_for(meta_json.exists() and tokens_total > 0),
+                "detail": (f"{tokens_total} tokens | tokenizer "
+                           f"{packed_meta.get('tokenizer_name') or 'byte'}" if meta_json.exists()
+                           else "no packed shards"),
+                "artifact": self.rel(packed) if packed.exists() else paths["session_packed_dir"],
+                "exists": meta_json.exists(),
+                "tokens": tokens_total,
+                "blocked_by": "generate" if jsonl_records == 0 else None,
+            },
+            {
+                "id": "train",
+                "label": "3. Train (DDP)",
+                "status": status_for(bool(ckpts), partial=metrics_count > 0),
+                "detail": (f"{len(ckpts)} ckpts | last step {latest_step}" if metrics_count
+                           else "no training started"),
+                "artifact": self.rel(run) if run.exists() else paths["session_run_dir"],
+                "exists": run.exists() and metrics_count > 0,
+                "metrics_count": metrics_count,
+                "latest_step": latest_step,
+                "ckpts": len(ckpts),
+                "blocked_by": "tokenize" if not meta_json.exists() else None,
+            },
+            {
+                "id": "evaluate",
+                "label": "4. Evaluate",
+                "status": status_for(False, partial=bool(ckpts)),
+                "detail": (f"{len(ckpts)} checkpoints available" if ckpts
+                           else "train at least one checkpoint first"),
+                "artifact": self.rel(run / "eval") if (run / "eval").exists()
+                             else paths["session_eval_dir"],
+                "exists": False,
+                "blocked_by": "train" if not ckpts else None,
+            },
+        ]
+        return {
+            "session": name,
+            "config": cfg,
+            "paths": paths,
+            "stages": stages,
+            "checkpoints": ckpts,
+        }
 
     def rel(self, path: Path) -> str:
         try:
@@ -1447,9 +2094,16 @@ class DashboardState:
             return str(path)
 
     def run_dirs(self) -> list[Path]:
-        if not self.logs_dir.exists():
-            return []
-        dirs = [p for p in self.logs_dir.iterdir() if p.is_dir() and (p / "metrics.jsonl").exists()]
+        dirs: list[Path] = []
+        if self.logs_dir.exists():
+            dirs.extend(p for p in self.logs_dir.iterdir()
+                        if p.is_dir() and (p / "metrics.jsonl").exists())
+        sessions_dir = self.root / "sessions"
+        if sessions_dir.exists():
+            for session in sessions_dir.iterdir():
+                run_dir = session / "run"
+                if run_dir.is_dir() and (run_dir / "metrics.jsonl").exists():
+                    dirs.append(run_dir)
         return sorted(dirs, key=lambda p: (p / "metrics.jsonl").stat().st_mtime, reverse=True)
 
     def runs(self) -> list[dict[str, Any]]:
@@ -1463,8 +2117,17 @@ class DashboardState:
             val = latest_with(rows, "val_ppl") or {}
             checkpoints = sorted(run_dir.glob("*.pt"), key=lambda p: p.stat().st_mtime, reverse=True)
             mtime = metrics_path.stat().st_mtime
+            # Session runs live at sessions/<name>/run; their dir name is "run" which collides.
+            # Use a path-like name so the Runs panel disambiguates them.
+            try:
+                if run_dir.parent.parent == (self.root / "sessions"):
+                    name = f"{run_dir.parent.name}/run"
+                else:
+                    name = run_dir.name
+            except OSError:
+                name = run_dir.name
             result.append({
-                "name": run_dir.name,
+                "name": name,
                 "path": self.rel(run_dir),
                 "metrics_count": len(rows),
                 "latest_step": latest.get("step") or train.get("step") or val.get("step"),
@@ -1481,20 +2144,37 @@ class DashboardState:
         return result
 
     def metrics(self, run_name: str, limit: int) -> list[dict[str, Any]]:
-        run_dir = (self.logs_dir / run_name).resolve()
-        if run_dir != self.logs_dir and self.logs_dir not in run_dir.parents:
-            raise ValueError("run path escapes logs dir")
+        # Accept logs/<run> names AND sessions/<name>/run synthetic names ("<name>/run").
+        if "/" in run_name:
+            run_dir = (self.root / "sessions" / run_name).resolve()
+            sessions_root = (self.root / "sessions").resolve()
+            if sessions_root not in run_dir.parents:
+                raise ValueError("run path escapes sessions dir")
+        else:
+            run_dir = (self.logs_dir / run_name).resolve()
+            if run_dir != self.logs_dir and self.logs_dir not in run_dir.parents:
+                raise ValueError("run path escapes logs dir")
         return read_jsonl(run_dir / "metrics.jsonl", limit=limit)
 
     def checkpoints(self) -> list[dict[str, Any]]:
-        if not self.logs_dir.exists():
-            return []
         rows = []
-        for path in sorted(self.logs_dir.rglob("*.pt"), key=lambda p: p.stat().st_mtime, reverse=True):
+        ckpt_paths: list[Path] = []
+        if self.logs_dir.exists():
+            ckpt_paths.extend(self.logs_dir.rglob("*.pt"))
+        sessions_dir = self.root / "sessions"
+        if sessions_dir.exists():
+            ckpt_paths.extend(sessions_dir.glob("*/run/*.pt"))
+        for path in sorted(ckpt_paths, key=lambda p: p.stat().st_mtime, reverse=True):
+            run_label = path.parent.name
+            try:
+                if path.parent.parent.parent == sessions_dir:
+                    run_label = f"{path.parent.parent.name}/run"
+            except OSError:
+                pass
             rows.append({
                 "name": path.name,
                 "path": self.rel(path),
-                "run": path.parent.name,
+                "run": run_label,
                 "step": parse_step_from_name(path),
                 "size_mb": path.stat().st_size / (1024 * 1024),
                 "updated_at": path.stat().st_mtime,
@@ -1524,24 +2204,37 @@ class DashboardState:
                 records = count_lines(path)
                 add_file("synthetic-jsonl", path, summary=f"{records} records | JSONL teacher traces", records=records)
 
+        sessions_dir = self.root / "sessions"
+        if sessions_dir.exists():
+            for sess_jsonl in sorted(sessions_dir.glob("*/data/*.jsonl"),
+                                     key=lambda p: p.stat().st_mtime, reverse=True):
+                records = count_lines(sess_jsonl)
+                add_file("session-jsonl", sess_jsonl,
+                         summary=f"{records} records | session {sess_jsonl.parent.parent.name}",
+                         records=records)
+
+        packed_meta_paths: list[Path] = []
         packed_dir = self.root / "data" / "packed"
         if packed_dir.exists():
-            for meta_path in sorted(packed_dir.rglob("meta.json"), key=lambda p: p.stat().st_mtime, reverse=True):
-                meta = safe_json(meta_path)
-                dataset_dir = meta_path.parent
-                splits = meta.get("splits", {}) if isinstance(meta, dict) else {}
-                train = splits.get("train", {}) if isinstance(splits, dict) else {}
-                val = splits.get("validation", {}) if isinstance(splits, dict) else {}
-                tokens = int(train.get("tokens", 0) or 0) + int(val.get("tokens", 0) or 0)
-                docs = int(train.get("docs", 0) or 0) + int(val.get("docs", 0) or 0)
-                artifacts.append({
-                    "kind": "packed-shards",
-                    "path": self.rel(dataset_dir),
-                    "size_mb": directory_size(dataset_dir) / (1024 * 1024),
-                    "updated_at": meta_path.stat().st_mtime,
-                    "records": docs,
-                    "summary": f"{docs} docs | {tokens} tokens | tokenizer {meta.get('tokenizer_name') or 'byte'}",
-                })
+            packed_meta_paths.extend(packed_dir.rglob("meta.json"))
+        if sessions_dir.exists():
+            packed_meta_paths.extend(sessions_dir.glob("*/packed/meta.json"))
+        for meta_path in sorted(packed_meta_paths, key=lambda p: p.stat().st_mtime, reverse=True):
+            meta = safe_json(meta_path)
+            dataset_dir = meta_path.parent
+            splits = meta.get("splits", {}) if isinstance(meta, dict) else {}
+            train = splits.get("train", {}) if isinstance(splits, dict) else {}
+            val = splits.get("validation", {}) if isinstance(splits, dict) else {}
+            tokens = int(train.get("tokens", 0) or 0) + int(val.get("tokens", 0) or 0)
+            docs = int(train.get("docs", 0) or 0) + int(val.get("docs", 0) or 0)
+            artifacts.append({
+                "kind": "packed-shards",
+                "path": self.rel(dataset_dir),
+                "size_mb": directory_size(dataset_dir) / (1024 * 1024),
+                "updated_at": meta_path.stat().st_mtime,
+                "records": docs,
+                "summary": f"{docs} docs | {tokens} tokens | tokenizer {meta.get('tokenizer_name') or 'byte'}",
+            })
 
         seed_path = self.root / "prompts" / "reasoning_seeds.jsonl"
         if seed_path.exists():
@@ -1646,6 +2339,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 limit = int(query.get("limit", ["500"])[0])
                 self.send_json(self.state.commands.log(job_id, limit=limit))
                 return
+            if parsed.path == "/api/ollama/models":
+                self.require_local_command_client()
+                query = parse_qs(parsed.query)
+                host = query.get("host", ["http://127.0.0.1:11434"])[0]
+                self.send_json(fetch_ollama_models(host))
+                return
+            if parsed.path == "/api/sessions":
+                self.require_local_command_client()
+                self.send_json({
+                    "sessions": self.state.sessions.list(),
+                    "active": self.state.sessions.active(),
+                })
+                return
+            if parsed.path == "/api/pipeline/state":
+                self.require_local_command_client()
+                query = parse_qs(parsed.query)
+                name = query.get("session", [self.state.sessions.active()])[0]
+                self.send_json(self.state.pipeline_state(name))
+                return
             self.send_json({"error": "not found"}, status=404)
         except Exception as exc:
             self.send_json({"error": str(exc)}, status=500)
@@ -1678,6 +2390,35 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 body = self.read_json()
                 job = self.state.commands.stop(str(body.get("id", "")))
                 self.send_json({"job": job.summary()})
+                return
+            if parsed.path == "/api/sessions/create":
+                self.require_local_command_client()
+                body = self.read_json()
+                name = _safe_session_name(str(body.get("name", "")))
+                cfg = self.state.sessions.ensure(name, model=str(body.get("model") or "qwen3:4b"))
+                self.state.sessions.update(name,
+                    model=body.get("model"),
+                    count=body.get("count"),
+                    workers=body.get("workers"),
+                )
+                self.send_json({"session": cfg, "paths": self.state.sessions.paths(name)})
+                return
+            if parsed.path == "/api/sessions/activate":
+                self.require_local_command_client()
+                body = self.read_json()
+                name = self.state.sessions.set_active(str(body.get("name", "")))
+                self.send_json({"active": name})
+                return
+            if parsed.path == "/api/sessions/update":
+                self.require_local_command_client()
+                body = self.read_json()
+                name = _safe_session_name(str(body.get("name") or self.state.sessions.active()))
+                cfg = self.state.sessions.update(name,
+                    model=body.get("model"),
+                    count=body.get("count"),
+                    workers=body.get("workers"),
+                )
+                self.send_json({"session": cfg})
                 return
             self.send_json({"error": "not found"}, status=404)
         except Exception as exc:

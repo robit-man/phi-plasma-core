@@ -67,11 +67,14 @@ def make_prompt(seed: str, rng: random.Random) -> str:
 
 
 def ollama_chat(host: str, model: str, prompt: str, temperature: float,
-                num_predict: int, timeout: int) -> str:
+                num_predict: int, timeout: int, think: bool = False) -> str:
     url = host.rstrip("/") + "/api/chat"
     payload = {
         "model": model,
         "stream": False,
+        "think": think,  # Qwen3 / DeepSeek-R1 / other reasoning models default to thinking, which
+                          # routes the answer into `message.thinking` and leaves `content` empty.
+                          # Setting think=False makes the model emit the answer directly.
         "messages": [
             {"role": "system", "content": SYSTEM},
             {"role": "user", "content": prompt},
@@ -85,14 +88,33 @@ def ollama_chat(host: str, model: str, prompt: str, temperature: float,
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
         obj = json.loads(response.read().decode("utf-8"))
-    return obj.get("message", {}).get("content", "")
+    msg = obj.get("message", {}) or {}
+    content = msg.get("content", "") or ""
+    if not content and msg.get("thinking"):
+        # Fallback: some servers ignore think=False on older models; salvage the answer
+        # so we don't write empty records. Strip everything before the final answer.
+        thinking = msg.get("thinking", "")
+        content = _strip_thinking_prefix(thinking)
+    return content
+
+
+def _strip_thinking_prefix(text: str) -> str:
+    # Models often emit "...long monologue... Final: <answer>" inside their thinking trace.
+    marker = "Final:"
+    idx = text.rfind(marker)
+    if idx != -1:
+        return text[idx:].strip()
+    return text.strip()
 
 
 def build_record(i: int, seed: str, model: str, host: str, temperature: float,
-                 num_predict: int, timeout: int, base_seed: int) -> dict[str, Any]:
+                 num_predict: int, timeout: int, base_seed: int,
+                 think: bool = False) -> dict[str, Any]:
     rng = random.Random(base_seed + i)
     prompt = make_prompt(seed, rng)
-    response = ollama_chat(host, model, prompt, temperature, num_predict, timeout)
+    response = ollama_chat(host, model, prompt, temperature, num_predict, timeout, think=think)
+    if not response.strip():
+        raise RuntimeError("empty response (model may be in thinking mode; pass --think to keep traces)")
     text = f"<|user|>\n{prompt}\n<|assistant|>\n{response}\n"
     return {
         "id": i,
@@ -156,6 +178,8 @@ def main() -> int:
                     help="print throughput summary every N completions")
     ap.add_argument("--strict-model-check", action="store_true",
                     help="abort if the requested model is not present in the local Ollama tags")
+    ap.add_argument("--think", action="store_true",
+                    help="keep the model's <think> traces in the output (default off — most teachers waste tokens in thinking mode and return empty content)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -236,7 +260,7 @@ def main() -> int:
                     t_call = time.monotonic()
                     try:
                         rec = build_record(i, seed, args.model, args.host, args.temperature,
-                                           args.num_predict, args.timeout, args.seed)
+                                           args.num_predict, args.timeout, args.seed, args.think)
                         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
                         f.flush()
                         n_ok += 1
@@ -253,7 +277,7 @@ def main() -> int:
                 with futures.ThreadPoolExecutor(max_workers=args.workers) as ex:
                     pending = [
                         ex.submit(build_record, i, seed, args.model, args.host, args.temperature,
-                                  args.num_predict, args.timeout, args.seed)
+                                  args.num_predict, args.timeout, args.seed, args.think)
                         for i, seed in jobs
                     ]
                     for j, fut in enumerate(futures.as_completed(pending), start=1):

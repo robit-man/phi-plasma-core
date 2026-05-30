@@ -88,6 +88,9 @@ scratch/
 sandbox/
 TODO.md.local
 
+# Per-experiment dashboard workspaces (data, packed shards, checkpoints, eval)
+sessions/
+
 # ───────────────────────────────────────────────────────────────────
 # Personal helper scripts (hardcode local paths; README has the
 # canonical reproduction commands)
