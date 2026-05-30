@@ -14,6 +14,7 @@ import os
 import re
 import signal
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -209,7 +210,8 @@ INDEX_HTML = r"""
     .command-form { padding: 12px; border-right: 1px solid var(--line); display: grid; align-content: start; gap: 10px; }
     .command-form textarea { min-height: 152px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
     .command-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-    .job-list { display: grid; gap: 8px; max-height: 190px; overflow: auto; }
+    .command-form > .field { min-height: 0; }
+    .job-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; min-height: 80px; overflow-y: auto; overflow-x: hidden; }
     .job-item { text-align: left; display: grid; gap: 4px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
     .job-item.active { border-color: var(--teal); background: var(--soft); }
     .job-title { font-weight: 650; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1189,6 +1191,9 @@ class CheckpointRuntime:
             }
 
 
+_PYTHON_TOKEN_RE = re.compile(r"(?<![\w./-])python(?![\w./-])")
+
+
 COMMAND_PRESETS = [
     {
         "id": "train_byte_infer",
@@ -1301,6 +1306,7 @@ class CommandManager:
         command = command.strip()
         if not command:
             raise ValueError("command is empty")
+        command = _PYTHON_TOKEN_RE.sub(sys.executable, command)
         job_id = uuid.uuid4().hex[:10]
         log_path = self.log_dir / f"{job_id}.log"
         env = os.environ.copy()
